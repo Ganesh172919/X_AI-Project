@@ -373,14 +373,5 @@ MIT License - See LICENSE file for details
 - InterpretML library: https://github.com/interpretml/interpret
 - scikit-learn community
 
-## Contact
-
-**Author:** Ravi Prakash  
-**Location:** Chennai, Tamil Nadu, India  
-**GitHub:** [Your GitHub Profile]
-
-For questions or issues, please open an issue on GitHub.
-
----
 
 **Last Updated:** March 2026
