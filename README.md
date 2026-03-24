@@ -28,9 +28,6 @@ This project replicates the key experiments from the InstaSHAP paper, which prop
 ### Quick Setup
 
 ```bash
-# Clone or download the repository
-cd instashap-replication
-
 # Create virtual environment (recommended)
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
@@ -337,30 +334,6 @@ computation:
 3. **Tree models**: Use TreeExplainer (faster) for tree-based models
 4. **Parallel processing**: Utilize `n_jobs: -1` for multi-core systems
 5. **GPU acceleration**: Set `use_gpu: true` if CUDA is available
-
-## Contributing
-
-Contributions welcome! Areas for improvement:
-
-- [ ] Add more datasets (e.g., Credit Default, Wine Quality)
-- [ ] Implement neural network black-box models
-- [ ] Add cross-validation for more robust evaluation
-- [ ] Optimize GAM training for larger datasets
-- [ ] Add interactive web dashboard for results
-- [ ] Implement SHAP interaction values
-
-## Citation
-
-If you use this code, please cite:
-
-```bibtex
-@inproceedings{instashap2025,
-  title={InstaSHAP: Interpretable Additive Models Explain Shapley Values Instantly},
-  booktitle={International Conference on Learning Representations (ICLR)},
-  year={2025},
-  url={https://openreview.net/forum?id=ky7vVlBQBY}
-}
-```
 
 ## License
 
