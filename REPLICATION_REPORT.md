@@ -230,8 +230,3 @@ All code, configurations, and documentation are included in the replication pack
 3. InterpretML: https://github.com/interpretml/interpret
 4. scikit-learn: https://scikit-learn.org/
 
----
-
-**Report Date:** March 16, 2026  
-**Author:** Ravi Prakash  
-**Location:** Chennai, Tamil Nadu, India
