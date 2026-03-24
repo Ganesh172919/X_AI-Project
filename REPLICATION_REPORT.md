@@ -215,13 +215,6 @@ All code, configurations, and documentation are included in the replication pack
 - **Examples**: Jupyter notebook with walkthrough
 - **Testing**: Unit tests for core functionality
 
-## Team Contribution
-
-**Ravi Prakash** (Solo Implementation)
-- Complete codebase implementation
-- Experiment design and execution
-- Results analysis and visualization
-- Documentation and reporting
 
 ## References
 
