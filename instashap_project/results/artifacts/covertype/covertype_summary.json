@@ -1,0 +1,42 @@
+{
+  "dataset": "covertype",
+  "device": "cpu",
+  "explanation_table": "results\\tables\\covertype_explanation_comparison.csv",
+  "features": [
+    "elevation",
+    "aspect",
+    "slope",
+    "horizontal_distance_to_hydrology",
+    "vertical_distance_to_hydrology",
+    "horizontal_distance_to_roadways",
+    "hillshade_9am",
+    "hillshade_noon",
+    "hillshade_3pm",
+    "horizontal_distance_to_fire_points",
+    "soil_climate_zone"
+  ],
+  "interaction_pairs": [
+    [
+      "elevation",
+      "soil_climate_zone"
+    ]
+  ],
+  "metrics_table": "results\\tables\\covertype_metrics.csv",
+  "paper_comparison_table": "results\\tables\\covertype_paper_comparison.csv",
+  "paper_metadata": {
+    "paper_blackbox_accuracy": 0.804,
+    "paper_gam1_accuracy": 0.724,
+    "paper_low_dim_gam_accuracy": 0.822
+  },
+  "plots": [
+    "results\\plots\\covertype\\covertype_shap_importance.png",
+    "results\\plots\\covertype\\covertype_shap_vs_instashap_alignment.png",
+    "results\\plots\\covertype\\covertype_accuracy.png",
+    "results\\plots\\covertype\\covertype_training_curves.png",
+    "results\\plots\\covertype\\covertype_shape_elevation.png",
+    "results\\plots\\covertype\\covertype_shape_soil_climate_zone.png",
+    "results\\plots\\covertype\\covertype_shape_aspect.png",
+    "results\\plots\\covertype\\covertype_interaction_elevation_soil_climate_zone.png"
+  ],
+  "task": "classification"
+}

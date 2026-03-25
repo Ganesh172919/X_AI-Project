@@ -1,0 +1,5 @@
+model,training_seconds,seconds_total,samples,mse,mae
+surrogate,1.705971999996109,,,,
+shap,,15.10407380000106,32.0,,
+instashap,,0.008166999999957625,32.0,,
+shap_vs_instashap,,,,0.3715367615222931,0.5427224636077881
