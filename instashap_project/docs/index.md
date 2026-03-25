@@ -1,0 +1,81 @@
+# Documentation Hub
+
+This documentation set is intended to make the project understandable without external guidance. It is organized in two layers:
+
+1. **Concept and workflow guides**: explain what the project does and how the pieces fit together.
+2. **File-by-file references**: explain the purpose, inputs, outputs, and extension points of each important source file.
+
+## Start Here
+
+- [Project Overview](01-project-overview.md)
+- [Research Context](02-research-context.md)
+- [Dataset Description](03-dataset-description.md)
+- [Model Architecture](05-model-architecture.md)
+- [InstaSHAP Methodology](06-instashap-methodology.md)
+
+## Practical Guides
+
+- [EDA Guide](04-eda-guide.md)
+- [Training Process](07-training-process.md)
+- [Evaluation Metrics](08-evaluation-metrics.md)
+- [Experiment Reproduction](09-experiment-reproduction.md)
+- [Installation and Setup](10-installation-and-setup.md)
+- [Usage Guide](11-usage-guide.md)
+- [Extension Guide](12-extension-guide.md)
+- [Results and Artifacts](13-results-and-artifacts.md)
+- [Troubleshooting](14-troubleshooting.md)
+- [Glossary](15-glossary.md)
+- [Project Structure](16-project-structure.md)
+- [Development Workflow](17-development-workflow.md)
+- [Research Assumptions](18-research-assumptions.md)
+- [Configuration Reference](19-configuration-reference.md)
+- [API Walkthrough](20-api-walkthrough.md)
+- [Experiment Cookbook](21-experiment-cookbook.md)
+- [Report Reading Guide](22-report-reading-guide.md)
+- [Results Schema](23-results-schema.md)
+- [FAQ](24-faq.md)
+- [Limitations and Gaps](25-limitations-and-gaps.md)
+- [Contributing Guide](26-contributing-guide.md)
+- [Validation Checklist](27-validation-checklist.md)
+- [System Flow Diagrams](28-system-flow-diagrams.md)
+- [Data Flow Deep Dive](29-data-flow-deep-dive.md)
+- [Mask Sampling Deep Dive](30-mask-sampling-deep-dive.md)
+- [GAM Components Deep Dive](31-gam-components-deep-dive.md)
+- [SHAP Aggregation Deep Dive](32-shap-aggregation-deep-dive.md)
+- [Classification vs Regression](33-classification-vs-regression.md)
+- [Performance Optimization](34-performance-optimization.md)
+- [TensorBoard and Logs](35-tensorboard-and-logs.md)
+- [Reproducibility Playbook](36-reproducibility-playbook.md)
+- [Code Reading Guide](37-code-reading-guide.md)
+- [Bike Experiment Trace](38-experiment-trace-bike.md)
+- [Covertype Experiment Trace](39-experiment-trace-covertype.md)
+- [Adult Experiment Trace](40-experiment-trace-adult.md)
+- [Testing Strategy](41-testing-strategy.md)
+- [Roadmap](42-roadmap.md)
+
+## File Reference
+
+- [main.py](files/main.md)
+- [config.yaml](files/config.md)
+- [requirements.txt](files/requirements.md)
+- [data/loaders.py](files/data-loaders.md)
+- [data/preprocessing.py](files/data-preprocessing.md)
+- [models/blackbox_model.py](files/models-blackbox-model.md)
+- [models/gam.py](files/models-gam.md)
+- [models/instashap.py](files/models-instashap.md)
+- [xai/shap_wrapper.py](files/xai-shap-wrapper.md)
+- [xai/instashap_explainer.py](files/xai-instashap-explainer.md)
+- [training/train.py](files/training-train.md)
+- [training/evaluate.py](files/training-evaluate.md)
+- [experiments/common.py](files/experiments-common.md)
+- [experiments/bike_sharing.py](files/experiments-bike-sharing.md)
+- [experiments/covertype.py](files/experiments-covertype.md)
+- [experiments/adult_income.py](files/experiments-adult-income.md)
+- [reports/generate_report.py](files/reports-generate-report.md)
+- [reports/summary_1page.py](files/reports-summary-1page.md)
+- [utils/reproducibility.py](files/utils-reproducibility.md)
+- [utils/metrics.py](files/utils-metrics.md)
+- [utils/visualization.py](files/utils-visualization.md)
+- [utils/logging_utils.py](files/utils-logging-utils.md)
+- [notebooks/instashap_analysis.ipynb](files/notebook-instashap-analysis.md)
+- [package `__init__.py` files](files/package-init-files.md)

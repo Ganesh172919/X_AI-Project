@@ -5,7 +5,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
-import shap
 
 from instashap_project.data.preprocessing import TabularPreprocessor
 from instashap_project.training.evaluate import predict_raw_outputs
@@ -54,6 +53,8 @@ class ShapBaselineExplainer:
         return grouped
 
     def explain(self, background: np.ndarray, evaluation_inputs: np.ndarray) -> ShapExplanationResult:
+        import shap
+
         minimum_evals = 2 * evaluation_inputs.shape[1] + 1
         explainer = shap.Explainer(self._model_fn, background, algorithm="permutation")
         explanation = explainer(
@@ -66,4 +67,3 @@ class ShapBaselineExplainer:
             base_values=np.asarray(explanation.base_values),
             transformed_values=np.asarray(explanation.values),
         )
-

@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+import os
+
+os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
+
 if __package__ in {None, ""}:
     import sys
     from pathlib import Path
@@ -13,17 +17,8 @@ from pathlib import Path
 
 import yaml
 
-from instashap_project.experiments import adult_income, bike_sharing, covertype
-from instashap_project.reports.generate_report import generate_full_report
-from instashap_project.reports.summary_1page import generate_one_page_summary
+from instashap_project.utils.logging_utils import configure_logging, format_log_event
 from instashap_project.utils.reproducibility import set_global_seed
-
-
-RUNNERS = {
-    "bike": bike_sharing.run,
-    "covertype": covertype.run,
-    "adult": adult_income.run,
-}
 
 
 def load_config(config_path: str | Path) -> dict:
@@ -43,6 +38,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--fast-dev-run", action="store_true", help="Use smaller subsets and shorter training.")
     parser.add_argument("--skip-report", action="store_true", help="Do not generate the full PDF report.")
     parser.add_argument("--skip-summary", action="store_true", help="Do not generate the one-page summary PDF.")
+    parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"])
     return parser.parse_args()
 
 
@@ -50,23 +46,48 @@ def main() -> None:
     """Run one or more experiments."""
 
     args = parse_args()
+    logger = configure_logging(
+        level=args.log_level,
+        log_file=Path(__file__).resolve().parent / "results" / "run.log",
+    )
     config = load_config(args.config)
     config["global"]["fast_dev_run"] = bool(args.fast_dev_run)
     set_global_seed(int(config["global"]["seed"]))
 
-    datasets = list(RUNNERS) if args.dataset == "all" else [args.dataset]
+    from instashap_project.experiments import adult_income, bike_sharing, covertype
+    from instashap_project.reports.generate_report import generate_full_report
+    from instashap_project.reports.summary_1page import generate_one_page_summary
+
+    runners = {
+        "bike": bike_sharing.run,
+        "covertype": covertype.run,
+        "adult": adult_income.run,
+    }
+
+    logger.info(
+        format_log_event(
+            "run.start",
+            dataset=args.dataset,
+            model=args.model,
+            fast_dev_run=args.fast_dev_run,
+            config=Path(args.config),
+        )
+    )
+
+    datasets = list(runners) if args.dataset == "all" else [args.dataset]
     results = []
     for dataset_name in datasets:
-        result = RUNNERS[dataset_name](config=config, selected_model=args.model)
+        result = runners[dataset_name](config=config, selected_model=args.model)
         results.append(result)
-        print(f"Completed {dataset_name}: {result.summary_path}")
+        logger.info(format_log_event("dataset.ready", dataset=dataset_name, summary_path=result.summary_path))
 
     if not args.skip_report:
         report_path = generate_full_report()
-        print(f"Full report: {report_path}")
+        logger.info(format_log_event("report.ready", path=report_path))
     if not args.skip_summary:
         summary_path = generate_one_page_summary()
-        print(f"One-page summary: {summary_path}")
+        logger.info(format_log_event("summary.ready", path=summary_path))
+    logger.info(format_log_event("run.complete", datasets=datasets))
 
 
 if __name__ == "__main__":

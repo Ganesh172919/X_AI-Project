@@ -20,6 +20,7 @@ from instashap_project.training.train import (
     train_instashap_model,
     train_masked_surrogate,
 )
+from instashap_project.utils.logging_utils import format_log_event, get_logger
 from instashap_project.utils.metrics import benchmark_callable, explanation_error
 from instashap_project.utils.reproducibility import ensure_dir, resolve_device, write_json
 from instashap_project.utils.visualization import (
@@ -35,6 +36,7 @@ from instashap_project.xai.shap_wrapper import ShapBaselineExplainer
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+LOGGER = get_logger(__name__)
 
 
 @dataclass(slots=True)
@@ -99,6 +101,14 @@ def run_tabular_experiment(
     """Run one full dataset experiment and persist results."""
 
     dataset_name = bundle.metadata.name
+    LOGGER.info(
+        format_log_event(
+            "experiment.start",
+            dataset=dataset_name,
+            selected_model=selected_model,
+            task=bundle.metadata.task,
+        )
+    )
     flags = _select_model_flags(selected_model)
     device = resolve_device(config["global"]["device"])
     seed = int(config["global"]["seed"])
@@ -147,6 +157,7 @@ def run_tabular_experiment(
     instashap_result: TrainingResult | None = None
 
     if flags["blackbox"]:
+        LOGGER.info(format_log_event("stage.start", dataset=dataset_name, stage="blackbox"))
         start = perf_counter()
         blackbox_result = train_blackbox_model(
             task=bundle.metadata.task,
@@ -168,8 +179,17 @@ def run_tabular_experiment(
         metric_row["training_seconds"] = training_seconds
         metric_row["inference_seconds_mean"] = inference_stats["seconds_mean"]
         metrics_rows.append(metric_row)
+        LOGGER.info(
+            format_log_event(
+                "stage.complete",
+                dataset=dataset_name,
+                stage="blackbox",
+                primary_metric=metric_row.get(_primary_metric_name(bundle.metadata.task)),
+            )
+        )
 
     if flags["gam"]:
+        LOGGER.info(format_log_event("stage.start", dataset=dataset_name, stage="gam1"))
         start = perf_counter()
         gam1_result = train_gam_model(
             task=bundle.metadata.task,
@@ -190,8 +210,17 @@ def run_tabular_experiment(
         metric_row["training_seconds"] = training_seconds
         metric_row["inference_seconds_mean"] = benchmark_callable(lambda: predict_targets(bundle.metadata.task, gam1_result.model, X_test[:512], device))["seconds_mean"]
         metrics_rows.append(metric_row)
+        LOGGER.info(
+            format_log_event(
+                "stage.complete",
+                dataset=dataset_name,
+                stage="gam1",
+                primary_metric=metric_row.get(_primary_metric_name(bundle.metadata.task)),
+            )
+        )
 
         if interactions:
+            LOGGER.info(format_log_event("stage.start", dataset=dataset_name, stage="gam2"))
             start = perf_counter()
             gam2_result = train_gam_model(
                 task=bundle.metadata.task,
@@ -212,6 +241,14 @@ def run_tabular_experiment(
             metric_row["training_seconds"] = training_seconds
             metric_row["inference_seconds_mean"] = benchmark_callable(lambda: predict_targets(bundle.metadata.task, gam2_result.model, X_test[:512], device))["seconds_mean"]
             metrics_rows.append(metric_row)
+            LOGGER.info(
+                format_log_event(
+                    "stage.complete",
+                    dataset=dataset_name,
+                    stage="gam2",
+                    primary_metric=metric_row.get(_primary_metric_name(bundle.metadata.task)),
+                )
+            )
 
     shap_selected: np.ndarray | None = None
     instashap_selected: np.ndarray | None = None
@@ -220,6 +257,7 @@ def run_tabular_experiment(
     if flags["instashap"]:
         if blackbox_result is None:
             raise RuntimeError("InstaSHAP requires the black-box baseline to be trained first.")
+        LOGGER.info(format_log_event("stage.start", dataset=dataset_name, stage="surrogate"))
         start = perf_counter()
         surrogate_result = train_masked_surrogate(
             blackbox_model=blackbox_result.model,
@@ -234,7 +272,9 @@ def run_tabular_experiment(
         training_seconds = perf_counter() - start
         histories["surrogate"] = surrogate_result.history
         explanation_rows.append({"model": "surrogate", "training_seconds": training_seconds})
+        LOGGER.info(format_log_event("stage.complete", dataset=dataset_name, stage="surrogate", training_seconds=training_seconds))
 
+        LOGGER.info(format_log_event("stage.start", dataset=dataset_name, stage="instashap"))
         start = perf_counter()
         instashap_result = train_instashap_model(
             preprocessor=preprocessor,
@@ -253,9 +293,18 @@ def run_tabular_experiment(
         metric_row["training_seconds"] = training_seconds
         metric_row["inference_seconds_mean"] = benchmark_callable(lambda: predict_targets(bundle.metadata.task, instashap_result.model, X_test[:512], device))["seconds_mean"]
         metrics_rows.append(metric_row)
+        LOGGER.info(
+            format_log_event(
+                "stage.complete",
+                dataset=dataset_name,
+                stage="instashap",
+                primary_metric=metric_row.get(_primary_metric_name(bundle.metadata.task)),
+            )
+        )
 
     shap_eval_size = int(dataset_cfg.get("shap_sample_size", config["global"]["shap_eval_samples"]))
     if flags["shap"] and blackbox_result is not None:
+        LOGGER.info(format_log_event("stage.start", dataset=dataset_name, stage="shap"))
         background_size = min(int(config["global"]["shap_background_size"]), len(X_train))
         evaluation_size = min(shap_eval_size, len(X_test))
         background = X_train[:background_size]
@@ -276,6 +325,7 @@ def run_tabular_experiment(
             output_indices = np.zeros(evaluation_size, dtype=int)
         shap_selected = _select_output_per_sample(shap_result.grouped_values, output_indices)
         explanation_rows.append({"model": "shap", "seconds_total": shap_time, "samples": evaluation_size})
+        LOGGER.info(format_log_event("stage.complete", dataset=dataset_name, stage="shap", seconds_total=shap_time, samples=evaluation_size))
 
         importance_plot = plots_dir / f"{dataset_name}_shap_importance.png"
         plot_feature_importance(shap_selected, bundle.metadata.feature_names, importance_plot, f"{dataset_name.title()} SHAP importance")
@@ -291,6 +341,15 @@ def run_tabular_experiment(
 
             error_values = explanation_error(shap_selected, instashap_selected)
             explanation_rows.append({"model": "shap_vs_instashap", **error_values})
+            LOGGER.info(
+                format_log_event(
+                    "stage.complete",
+                    dataset=dataset_name,
+                    stage="explanation_compare",
+                    mse=error_values["mse"],
+                    mae=error_values["mae"],
+                )
+            )
             comparison_plot = plots_dir / f"{dataset_name}_shap_vs_instashap_alignment.png"
             plot_explanation_alignment(
                 shap_selected,
@@ -392,6 +451,14 @@ def run_tabular_experiment(
     }
     summary_path = artifacts_dir / f"{dataset_name}_summary.json"
     write_json(summary_path, summary_payload)
+    LOGGER.info(
+        format_log_event(
+            "experiment.complete",
+            dataset=dataset_name,
+            summary_path=summary_path,
+            metrics_path=metrics_path,
+        )
+    )
     return ExperimentResult(
         dataset=dataset_name,
         summary_path=summary_path,
