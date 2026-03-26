@@ -34,12 +34,12 @@ def regression_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> RegressionMetr
     """Compute regression metrics used in the paper-style tables."""
 
     mse = float(mean_squared_error(y_true, y_pred))
-    variance = float(np.var(y_true))
-    nmse_pct = 100.0 * mse / variance if variance > 0 else float("nan")
+    r2 = float(r2_score(y_true, y_pred))
+    nmse_pct = (1.0 - r2) * 100.0
     return RegressionMetrics(
         rmse=float(np.sqrt(mse)),
         mse=mse,
-        r2=float(r2_score(y_true, y_pred)),
+        r2=r2,
         nmse_pct=nmse_pct,
     )
 
