@@ -1,5 +1,11 @@
 # X_AI-Project — InstaSHAP Reproducibility Suite
 
+**Paper Details:**
+* **Title:** InstaSHAP: Interpretable Additive Models Explain Shapley Values Instantly
+* **Authors:** James Enouen, Yan Liu
+* **Publication Venue:** Accepted at the International Conference on Learning Representations (ICLR) 2025
+* **Official Publication Link:** https://openreview.net/forum?id=ky7vVlBQBY
+
 > **Reproducing and extending the ICLR 2025 paper:**  
 > *"InstaSHAP: Interpretable Additive Models Explain Shapley Values Instantly"*
 
