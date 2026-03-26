@@ -2,7 +2,12 @@
 
 ## A Complete End-to-End Research Reproducibility Report
 
-> **Reference Paper:** *"InstaSHAP: Interpretable Additive Models Explain Shapley Values Instantly"* — ICLR 2025  
+**Paper Details:**
+* **Title:** InstaSHAP: Interpretable Additive Models Explain Shapley Values Instantly
+* **Authors:** James Enouen, Yan Liu
+* **Publication Venue:** Accepted at the International Conference on Learning Representations (ICLR) 2025
+* **Official Publication Link:** https://openreview.net/forum?id=ky7vVlBQBY
+
 > **Project Type:** Reproducibility Study & Implementation  
 > **Tech Stack:** Python 3.10+, PyTorch 2.2+, scikit-learn, SHAP, ucimlrepo
 
