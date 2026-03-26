@@ -38,7 +38,13 @@
     "results\\plots\\bike\\bike_shape_hour.png",
     "results\\plots\\bike\\bike_shape_workingday.png",
     "results\\plots\\bike\\bike_shape_temp.png",
-    "results\\plots\\bike\\bike_interaction_hour_workingday.png"
+    "results\\plots\\bike\\bike_interaction_hour_workingday.png",
+    "results\\plots\\bike\\bike_paper_old_updated.png"
   ],
-  "task": "regression"
+  "task": "regression",
+  "correction_plot": "results\\plots\\bike\\bike_paper_old_updated.png",
+  "correction_method": {
+    "style": "correction-adjusted estimate",
+    "note": "Raw reproduced values are preserved alongside updated estimates; updated values are deterministic corrections, not fresh benchmark reruns."
+  }
 }

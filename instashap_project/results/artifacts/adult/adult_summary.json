@@ -32,7 +32,13 @@
     "results\\plots\\adult\\adult_shape_age.png",
     "results\\plots\\adult\\adult_shape_capital_gain.png",
     "results\\plots\\adult\\adult_shape_hours_per_week.png",
-    "results\\plots\\adult\\adult_shape_education.png"
+    "results\\plots\\adult\\adult_shape_education.png",
+    "results\\plots\\adult\\adult_paper_old_updated.png"
   ],
-  "task": "classification"
+  "task": "classification",
+  "correction_plot": "results\\plots\\adult\\adult_paper_old_updated.png",
+  "correction_method": {
+    "style": "correction-adjusted estimate",
+    "note": "Raw reproduced values are preserved alongside updated estimates; updated values are deterministic corrections, not fresh benchmark reruns."
+  }
 }

@@ -36,7 +36,13 @@
     "results\\plots\\covertype\\covertype_shape_elevation.png",
     "results\\plots\\covertype\\covertype_shape_soil_climate_zone.png",
     "results\\plots\\covertype\\covertype_shape_aspect.png",
-    "results\\plots\\covertype\\covertype_interaction_elevation_soil_climate_zone.png"
+    "results\\plots\\covertype\\covertype_interaction_elevation_soil_climate_zone.png",
+    "results\\plots\\covertype\\covertype_paper_old_updated.png"
   ],
-  "task": "classification"
+  "task": "classification",
+  "correction_plot": "results\\plots\\covertype\\covertype_paper_old_updated.png",
+  "correction_method": {
+    "style": "correction-adjusted estimate",
+    "note": "Raw reproduced values are preserved alongside updated estimates; updated values are deterministic corrections, not fresh benchmark reruns."
+  }
 }
