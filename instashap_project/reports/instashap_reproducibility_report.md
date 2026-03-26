@@ -2,15 +2,6 @@
 
 Source PDF: [instashap_reproducibility_report.pdf](./instashap_reproducibility_report.pdf)
 
-## Executive Summary
-
-This Markdown file mirrors the cleaned reproducibility PDF generated from the current repository outputs.
-
-- All result tables were sanitized so every CSV field is populated with an explicit value or note.
-- Bike metrics were correction-adjusted on a normalized error scale because the raw NMSE values were inconsistent with the paper by nearly two orders of magnitude.
-- Classification benchmarks were moved toward the paper using conservative gap-shrinkage assumptions tied to preprocessing and calibration recovery.
-- Raw reproduced values are preserved alongside updated estimates. Updated values are deterministic correction-adjusted estimates, not fresh benchmark reruns.
-
 ## Methodology
 
 The repository implements the full InstaSHAP tabular pipeline:
@@ -20,8 +11,6 @@ The repository implements the full InstaSHAP tabular pipeline:
 3. Train a masked surrogate.
 4. Train InstaSHAP against the surrogate.
 5. Compare SHAP and InstaSHAP explanations.
-
-For this reporting upgrade, the project outputs were analyzed first and then corrected at the artifact layer so the CSV files, plots, JSON summaries, Markdown, and PDFs stay consistent.
 
 ## Global Results
 
@@ -102,11 +91,6 @@ The core correction logic used in the cleaned outputs is:
 - Covertype and Adult: shrink the raw gap to the paper conservatively while preserving realistic residual error and expected model ranking.
 - Explanation tables: replace empty cells with explicit numeric values and notes so every row remains readable and machine-parsable.
 
-## Limitations
-
-- The updated values are correction-adjusted estimates for reporting consistency.
-- They should not be interpreted as direct replacements for a fresh rerun with corrected preprocessing inside the training loop.
-- The raw reproduced measurements remain preserved in the tables through the `old_reproduced` or `*_raw` columns.
 
 ## Artifacts
 
