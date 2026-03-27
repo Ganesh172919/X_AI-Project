@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import warnings
+warnings.filterwarnings("ignore", message="urllib3.*doesn't match a supported version")
+
 import os
 
 os.environ.setdefault("TF_CPP_MIN_LOG_LEVEL", "3")
@@ -36,8 +39,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model", choices=["all", "blackbox", "gam", "shap", "instashap"], default="all")
     parser.add_argument("--config", default=Path(__file__).resolve().parent / "config.yaml")
     parser.add_argument("--fast-dev-run", action="store_true", help="Use smaller subsets and shorter training.")
-    parser.add_argument("--skip-report", action="store_true", help="Do not generate the full PDF report.")
-    parser.add_argument("--skip-summary", action="store_true", help="Do not generate the one-page summary PDF.")
     parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"])
     return parser.parse_args()
 
@@ -55,8 +56,6 @@ def main() -> None:
     set_global_seed(int(config["global"]["seed"]))
 
     from instashap_project.experiments import adult_income, bike_sharing, covertype
-    from instashap_project.reports.generate_report import generate_full_report
-    from instashap_project.reports.summary_1page import generate_one_page_summary
 
     runners = {
         "bike": bike_sharing.run,
@@ -81,12 +80,6 @@ def main() -> None:
         results.append(result)
         logger.info(format_log_event("dataset.ready", dataset=dataset_name, summary_path=result.summary_path))
 
-    if not args.skip_report:
-        report_path = generate_full_report()
-        logger.info(format_log_event("report.ready", path=report_path))
-    if not args.skip_summary:
-        summary_path = generate_one_page_summary()
-        logger.info(format_log_event("summary.ready", path=summary_path))
     logger.info(format_log_event("run.complete", datasets=datasets))
 
 

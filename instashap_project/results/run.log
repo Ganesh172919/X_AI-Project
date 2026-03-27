@@ -66,3 +66,17 @@
 22:00:06 | INFO | report.ready | path="C:\\Users\\RAVIPRAKASH\\Downloads\\X_AI-Project\\instashap_project\\reports\\instashap_reproducibility_report.pdf"
 22:00:06 | INFO | summary.ready | path="C:\\Users\\RAVIPRAKASH\\Downloads\\X_AI-Project\\instashap_project\\reports\\instashap_summary_1page.pdf"
 22:00:06 | INFO | run.complete | datasets=["bike", "covertype", "adult"]
+09:27:23 | INFO | run.start | config="C:\\Users\\RAVIPRAKASH\\Downloads\\X_AI-Project\\instashap_project\\config.yaml" dataset="all" fast_dev_run=true model="all"
+09:27:34 | INFO | experiment.start | dataset="bike" selected_model="all" task="regression"
+09:27:34 | INFO | stage.start | dataset="bike" stage="blackbox"
+09:27:39 | INFO | stage.complete | dataset="bike" primary_metric=204.8466444015503 stage="blackbox"
+09:27:39 | INFO | stage.start | dataset="bike" stage="gam1"
+09:27:40 | INFO | stage.complete | dataset="bike" primary_metric=188.81553411483765 stage="gam1"
+09:27:40 | INFO | stage.start | dataset="bike" stage="gam2"
+09:27:42 | INFO | stage.complete | dataset="bike" primary_metric=187.43277788162231 stage="gam2"
+09:27:42 | INFO | stage.start | dataset="bike" stage="surrogate"
+09:27:43 | INFO | stage.complete | dataset="bike" stage="surrogate" training_seconds=0.8978122000116855
+09:27:43 | INFO | stage.start | dataset="bike" stage="instashap"
+09:27:44 | INFO | stage.complete | dataset="bike" primary_metric=203.98283004760742 stage="instashap"
+09:27:44 | INFO | stage.start | dataset="bike" stage="shap"
+09:28:34 | INFO | run.start | config="C:\\Users\\RAVIPRAKASH\\Downloads\\X_AI-Project\\instashap_project\\config.yaml" dataset="all" fast_dev_run=true model="all"
