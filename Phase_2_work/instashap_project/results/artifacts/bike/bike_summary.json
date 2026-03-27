@@ -1,0 +1,44 @@
+{
+  "dataset": "bike",
+  "device": "cpu",
+  "explanation_table": "results\\tables\\bike_explanation_comparison.csv",
+  "features": [
+    "day_of_month",
+    "temp",
+    "atemp",
+    "hum",
+    "windspeed",
+    "season",
+    "year",
+    "month",
+    "hour",
+    "holiday",
+    "weekday",
+    "workingday",
+    "weather_situation"
+  ],
+  "interaction_pairs": [
+    [
+      "hour",
+      "workingday"
+    ]
+  ],
+  "metrics_table": "results\\tables\\bike_metrics.csv",
+  "paper_comparison_table": "results\\tables\\bike_paper_comparison.csv",
+  "paper_metadata": {
+    "paper_blackbox_nmse_pct": 6.59,
+    "paper_gam1_nmse_pct": 17.4,
+    "paper_low_dim_gam_nmse_pct": 6.23
+  },
+  "plots": [
+    "results\\plots\\bike\\bike_shap_importance.png",
+    "results\\plots\\bike\\bike_shap_vs_instashap_alignment.png",
+    "results\\plots\\bike\\bike_nmse_pct.png",
+    "results\\plots\\bike\\bike_training_curves.png",
+    "results\\plots\\bike\\bike_shape_hour.png",
+    "results\\plots\\bike\\bike_shape_workingday.png",
+    "results\\plots\\bike\\bike_shape_temp.png",
+    "results\\plots\\bike\\bike_interaction_hour_workingday.png"
+  ],
+  "task": "regression"
+}

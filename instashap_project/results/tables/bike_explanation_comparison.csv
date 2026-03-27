@@ -1,5 +1,0 @@
-model,training_seconds,seconds_total,samples,mse,mae,seconds_per_sample,speedup_vs_shap,notes
-surrogate,1.0681,1.0681,0,0.0,0.0,1.0681,11.89,Masked surrogate training stage only; no standalone explanation fidelity metric is defined for this row.
-shap,0.0,12.6959,32,0.0,0.0,0.396747,1.0,"Permutation SHAP is the reference explainer, so its self-error is zero and training cost is zero."
-instashap,2.4168,0.0083,32,0.371219,0.542714,0.000259,1529.63,Single-pass explainer evaluated against the SHAP baseline on the same sample subset.
-shap_vs_instashap,0.0,12.7042,32,0.371219,0.542714,0.397006,1.0,Direct alignment row; error terms summarize the SHAP vs InstaSHAP attribution gap.
