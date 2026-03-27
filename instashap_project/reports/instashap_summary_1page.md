@@ -32,7 +32,7 @@ InstaSHAP replaces expensive permutation-based SHAP computation with a **single 
 | Bike | GAM-1 | NMSE (%) | 17.40 | 20.53 | ✅ Match |
 | Bike | GAM-2 | NMSE (%) | 6.23 | 7.91 | ✅ Match |
 | Covertype | Black-Box | Accuracy | 0.804 | 0.791 | ✅ Match |
-| Covertype | GAM-1 | Accuracy | 0.724 | 0.719 | ✅ Match |
+| Covertype | GAM-1 | Accuracy | 0.724 | 0.718 | ✅ Match |
 | Covertype | GAM-2 | Accuracy | 0.822 | 0.808 | ✅ Match |
 | Adult | GAM-1 | Accuracy | 0.842 | 0.840 | ✅ Match |
 | Adult | InstaSHAP | Accuracy | 0.843 | 0.842 | ✅ Match |
