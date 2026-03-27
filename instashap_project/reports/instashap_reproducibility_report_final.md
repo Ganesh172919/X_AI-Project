@@ -2,7 +2,7 @@
 
 > **Paper:** *InstaSHAP: Interpretable Additive Models Explain Shapley Values Instantly*
 > **Venue:** ICLR 2025
-> **Replication by:** Ravi Prakash | March 2026
+
 
 ---
 
