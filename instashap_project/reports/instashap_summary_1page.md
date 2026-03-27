@@ -1,7 +1,7 @@
 # InstaSHAP — 1-Page Replication Summary
 
 > **Paper:** *InstaSHAP: Interpretable Additive Models Explain Shapley Values Instantly* (ICLR 2025)
-> **Replication by:** Ravi Prakash | March 2026
+
 
 ---
 
