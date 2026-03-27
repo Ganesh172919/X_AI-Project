@@ -30,7 +30,6 @@ This project is a **research-grade, modular reproduction** of the InstaSHAP meth
 ---
 
 ## Project Structure
-
 ```
 X_AI-Project/
 ├── README.md                          ← You are here
