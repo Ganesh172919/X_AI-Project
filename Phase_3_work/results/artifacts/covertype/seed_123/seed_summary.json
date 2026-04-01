@@ -1,0 +1,14 @@
+{
+  "dataset": "covertype",
+  "device": "cpu",
+  "plots": [
+    "results\\plots\\covertype\\covertype_seed_123_shap_importance.png",
+    "results\\plots\\covertype\\covertype_seed_123_training_curves.png"
+  ],
+  "seed": 123,
+  "selected_variants": [
+    "zero_mask",
+    "empirical_background"
+  ],
+  "variant": "compare"
+}
