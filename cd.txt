@@ -1,0 +1,193 @@
+# Phase 3 Plan: Covertype Background-Aware InstaSHAP Extension
+
+**Summary**
+- Build a fully standalone Phase 3 project inside `C:\Users\RAVIPRAKASH\Downloads\X_AI-Project\Phase_3_work` that reproduces the current InstaSHAP-style Covertype pipeline and then extends it with one research improvement.
+- Use **Covertype** as the single primary dataset, because the current code already encodes a strong `elevation × soil_climate_zone` dependence signal and the existing reproduced Covertype InstaSHAP result is weak enough to support a meaningful “before vs after” story.
+- Define the research gap as: **the current implementation uses zero-masking in transformed feature space (`x * mask`), which creates unrealistic masked samples for tabular data, especially with standardized numeric features and one-hot categorical groups; this can damage surrogate fidelity, downstream InstaSHAP quality, and explanation faithfulness.**
+- Implement one improvement: **Empirical-Background Masking InstaSHAP**.
+  - Baseline: current zero-mask coalition construction.
+  - Improved method: replace every masked original feature group with values copied from real training rows, and average surrogate targets over multiple sampled background rows per coalition.
+  - Framing: this is a data-aware approximation to marginal/interventional masking, supported by the original paper’s discussion of baseline/marginal/conditional removal choices and by prior literature showing that independence-style or off-distribution masking can give wrong explanations.
+- Evaluate the extension with a strict **baseline vs improved** comparison on the same dataset, same seeds, same architecture family, same train/val/test protocol, and same reporting pipeline.
+- Final deliverables will be generated from the code itself: runnable program, results tables/plots in the repo, updated `README.md`, `AI_USAGE.md`, multi-page experiment PDF, and a separate 1-page research-gap PDF.
+
+**Research Basis**
+- Primary paper to anchor the gap and narrative: [Original_Research_Paper_InstaSHAP.pdf](C:\Users\RAVIPRAKASH\Downloads\X_AI-Project\Phase_2_work\instashap_project\reports\Original_Research_Paper_InstaSHAP.pdf)
+- Local Phase 2 references to mine and cite in the Phase 3 writeup:
+  - [InstaSHAP_Research_Project_Report.md](C:\Users\RAVIPRAKASH\Downloads\X_AI-Project\Phase_2_work\instashap_project\reports\InstaSHAP_Research_Project_Report.md)
+  - [InstaSHAP_Architecture.md](C:\Users\RAVIPRAKASH\Downloads\X_AI-Project\Phase_2_work\instashap_project\reports\InstaSHAP_Architecture.md)
+  - existing Phase 2 Covertype metrics/artifacts for baseline context
+- Online literature to cite in the PDFs and README:
+  - Lundberg and Lee, SHAP: https://proceedings.neurips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions
+  - Jethani et al., FastSHAP: https://arxiv.org/abs/2107.07436
+  - Aas et al., dependent-feature SHAP: https://arxiv.org/abs/1903.10464
+  - Frye et al., Shapley explainability on the data manifold: https://arxiv.org/abs/2006.01272
+  - Faith-Shap interaction paper for interaction context: https://jmlr.org/papers/v24/22-0202.html
+- The Phase 3 report will explicitly state one honest inference: our improvement is **not** a full conditional-SHAP implementation; it is a stronger empirical-background masking scheme designed to fix the specific weakness of zero-masking in the current codebase.
+
+**Implementation Changes**
+- Create a standalone Phase 3 package under `Phase_3_work`, with copied/adapted Phase 2 code so the final project does not depend on importing Phase 2 at runtime.
+- Keep the core structure recognizable: `data/`, `models/`, `training/`, `experiments/`, `utils/`, `reports/`, `results/`, `docs/`, plus root `README.md`, `requirements.txt`, and `AI_USAGE.md`.
+- Reuse the same Covertype loader logic from Phase 2 so dataset definition stays aligned with the paper and with the provided `loaders.py`.
+- Introduce a masking abstraction with two explicit strategies:
+  - `zero_mask`: exact baseline behavior from the current project.
+  - `empirical_background`: for each sampled coalition mask, fill masked original feature groups from sampled training rows instead of zeroing transformed columns.
+- Add a new small config/type layer, for example `MaskingConfig`, with fixed fields:
+  - `strategy`
+  - `background_bank_size`
+  - `background_samples_train`
+  - `background_samples_eval`
+  - `seed`
+- Extend preprocessing utilities so masking happens at the **original feature-group level**, not raw transformed-column multiplication only.
+  - Numeric groups remain valid scalars.
+  - One-hot categorical groups are replaced as a whole group from a real encoded training row, preserving one-hot validity.
+- Update surrogate training:
+  - Baseline run keeps current zero-mask objective.
+  - Improved run builds masked inputs via empirical-background replacement.
+  - Surrogate targets for the improved run are averaged across `K` sampled background rows per input/mask to reduce variance and better approximate the masked value function.
+- Update InstaSHAP training:
+  - Train one baseline InstaSHAP model against the zero-mask surrogate.
+  - Train one improved InstaSHAP model against the empirical-background surrogate.
+  - Keep architecture, optimizer family, patience, and interaction settings matched so the comparison isolates the masking change.
+- Keep Covertype interaction modeling fixed to the current pair `("elevation", "soil_climate_zone")` for both baseline and improved variants.
+- Add experiment naming that is impossible to confuse:
+  - `instashap_zero`
+  - `instashap_bg`
+  - `surrogate_zero`
+  - `surrogate_bg`
+- Extend result schemas so Phase 3 always emits:
+  - predictive metrics table
+  - explanation fidelity table
+  - coalition fidelity table
+  - runtime table
+  - seed aggregate JSON
+  - plots for metric comparison and explanation comparison
+- Add a report generator script that reads produced CSV/JSON/PNG artifacts and creates:
+  - `reports/phase3_experiment_report.pdf`
+  - `reports/phase3_research_gap_1page.pdf`
+- Add Markdown companions for both PDFs so the textual content is easy to review in the repo:
+  - `reports/phase3_experiment_report.md`
+  - `reports/phase3_research_gap_1page.md`
+
+**Public Interfaces**
+- Root CLI will support these commands and flags:
+  - `python main.py --dataset covertype --variant baseline`
+  - `python main.py --dataset covertype --variant improved`
+  - `python main.py --dataset covertype --variant compare`
+  - `python main.py --dataset covertype --variant compare --fast-dev-run`
+  - `python main.py --report-only`
+- `--variant compare` will run the full study end-to-end:
+  - black-box
+  - GAM-1
+  - GAM-2
+  - zero-mask surrogate + zero-mask InstaSHAP
+  - empirical-background surrogate + background-aware InstaSHAP
+  - permutation SHAP comparison
+  - tables, plots, JSON, PDFs
+- Config will include fixed defaults for the Phase 3 paper run:
+  - dataset: `covertype`
+  - seeds: 3 full seeds
+  - interaction pair: `elevation × soil_climate_zone`
+  - background bank built from training split only
+  - background samples per coalition: modest during training, larger during evaluation
+- Output directories will be deterministic and easy to grade:
+  - `results/tables/`
+  - `results/plots/covertype/`
+  - `results/artifacts/covertype/`
+  - `reports/`
+
+**Experiment Design**
+- Run one smoke test with `--fast-dev-run` to validate the whole pipeline before full execution.
+- Run the full experiment with **3 seeds** to make the PDF academically stronger than a single lucky run.
+- Keep train/val/test split logic identical across baseline and improved variants within each seed.
+- Compare these models in every seed:
+  - black-box baseline
+  - GAM-1
+  - GAM-2
+  - `instashap_zero`
+  - `instashap_bg`
+- Main quantitative tables:
+  - predictive performance: accuracy and log-loss
+  - explanation fidelity vs permutation SHAP: MSE, MAE, and rank correlation
+  - runtime: training time, one-pass explanation time, SHAP total explanation time
+  - coalition fidelity: surrogate error on held-out masked evaluations for zero-mask vs background-mask objectives
+- Main qualitative figures:
+  - metric bar chart for predictive performance
+  - explanation fidelity comparison chart
+  - latency comparison chart
+  - SHAP vs `instashap_zero` alignment plot
+  - SHAP vs `instashap_bg` alignment plot
+  - improved model shape plots for `elevation`, `soil_climate_zone`, `aspect`
+  - improved interaction heatmap for `elevation × soil_climate_zone`
+- The report claim will be considered successful if:
+  - `instashap_bg` improves explanation fidelity over `instashap_zero` on most seeds
+  - predictive accuracy is preserved or improved relative to `instashap_zero`
+  - the report clearly shows why the change is attributable to better masking, not a larger model or looser setup
+
+**PDF Content**
+- `phase3_research_gap_1page.pdf` will contain:
+  - problem statement
+  - exact limitation in the current implementation and why it matters for Covertype
+  - proposed improvement
+  - literature support
+  - one compact before/after table
+  - short conclusion
+- `phase3_experiment_report.pdf` will contain:
+  - title and objective
+  - summary of original InstaSHAP method
+  - identified research gap
+  - proposed empirical-background masking method
+  - implementation details tied to this repo
+  - experiment setup and fixed seeds
+  - before/after tables and plots
+  - interpretation of results
+  - limitations and future work
+  - references
+- Both PDFs will be regenerated by code after the experiment run so the numbers in the documents match the saved tables exactly.
+
+**Documentation**
+- `README.md` in `Phase_3_work` will be rewritten for grading clarity:
+  - what changed from Phase 2
+  - exact research gap
+  - exact improvement
+  - setup commands
+  - run commands
+  - artifact locations
+  - how to reproduce the PDF results
+- Add `AI_USAGE.md` because the assignment explicitly requires it.
+  - tool used
+  - prompt history summary
+  - what was modified/verified manually
+- Add a short `docs/methodology.md` or equivalent if needed, but keep the README sufficient on its own for a grader.
+
+**Test Plan**
+- Unit tests for masking utilities:
+  - zero-mask preserves baseline behavior
+  - empirical-background masking preserves unmasked feature groups exactly
+  - categorical one-hot groups remain valid after replacement
+- Unit tests for config and CLI parsing:
+  - accepted variants
+  - report-only mode
+  - fast-dev-run mode
+- Experiment smoke test:
+  - full compare pipeline on reduced rows/epochs
+  - artifacts created in expected directories
+  - report generator works even if some optional plots are missing
+- Full acceptance run:
+  - 3-seed Covertype compare run completes
+  - CSV/JSON artifacts exist
+  - both PDFs exist
+  - README instructions match actual commands
+- Manual review checklist before final submission:
+  - tables in code match tables in PDFs
+  - research-gap text cites the literature and the original paper correctly
+  - no Phase 2 runtime dependency remains
+  - all paths and commands work from `Phase_3_work`
+
+**Assumptions and Defaults**
+- Primary dataset is Covertype only.
+- Phase 3 will be standalone, not a wrapper around Phase 2.
+- Baseline for “before” is the current zero-mask InstaSHAP pipeline, reproduced inside Phase 3.
+- The improvement will target the masking/value-function construction weakness, not a brand-new model family.
+- Reports will be generated programmatically after running the project.
+- If full conditional modeling proves too heavy for a clean standalone delivery, we will stay with empirical-background masking and state that choice explicitly as a scoped, defensible improvement rather than overclaiming a full dependence-aware SHAP method.
