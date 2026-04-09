@@ -1,11 +1,7 @@
-"""Black-box and surrogate model definitions."""
+"""Black-box MLP and surrogate model definitions."""
 
 from __future__ import annotations
-from dataclasses import dataclass
-from typing import Literal
 
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 import torch
 from torch import nn
 
@@ -57,33 +53,3 @@ class SurrogateEnsemble(nn.Module):
     def forward_all(self, masked_inputs: torch.Tensor, feature_mask: torch.Tensor) -> list[torch.Tensor]:
         """Return individual surrogate outputs for stability analysis."""
         return [s(masked_inputs, feature_mask) for s in self.surrogates]
-
-
-@dataclass(slots=True)
-class RandomForestBlackBox:
-    """Sklearn random forest wrapper."""
-    task: Literal["regression", "classification"]
-    random_state: int
-    n_estimators: int = 300
-    max_depth: int | None = None
-
-    def __post_init__(self) -> None:
-        cls = RandomForestRegressor if self.task == "regression" else RandomForestClassifier
-        self.model = cls(n_estimators=self.n_estimators, max_depth=self.max_depth,
-                         random_state=self.random_state, n_jobs=-1)
-
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "RandomForestBlackBox":
-        self.model.fit(X, y)
-        return self
-
-    def predict(self, X: np.ndarray) -> np.ndarray:
-        return self.model.predict(X)
-
-    def predict_proba(self, X: np.ndarray) -> np.ndarray:
-        return self.model.predict_proba(X)
-
-    def predict_raw(self, X: np.ndarray) -> np.ndarray:
-        if self.task == "regression":
-            return np.asarray(self.model.predict(X), dtype=np.float32).reshape(-1, 1)
-        probabilities = np.clip(self.model.predict_proba(X), 1e-8, 1.0)
-        return np.log(probabilities).astype(np.float32)

@@ -523,7 +523,7 @@ pip install -r requirements.txt
 | Package | Version | Purpose |
 |---------|---------|---------|
 | `torch` | ≥ 2.2 | Neural network training and inference |
-| `scikit-learn` | ≥ 1.4 | Preprocessing, splits, Random Forest |
+| `scikit-learn` | ≥ 1.4 | Preprocessing, splits, metrics |
 | `shap` | ≥ 0.45 | Permutation SHAP baseline |
 | `numpy` | ≥ 1.26 | Array operations |
 | `pandas` | ≥ 2.2 | Data manipulation, CSV export |
