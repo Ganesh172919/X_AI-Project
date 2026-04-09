@@ -1,85 +1,90 @@
 # Phase 3: InstaSHAP Extension - Interaction-Aware InstaSHAP
 
-## Project Overview
+This folder is a cleaner write-up of the interaction-aware Phase 3 direction. Think of it as the more presentation-ready version of `phase3/`.
 
-This phase identifies a meaningful limitation in the InstaSHAP paper and proposes, implements, and experimentally validates an improvement.
+## Core question
 
-### Identified Research Gap
-
-**Inability to Capture Feature Interactions**
-
-InstaSHAP relies on purely additive surrogate models (GAMs/EBMs) that decompose predictions into independent per-feature contributions. By construction, these models cannot capture pairwise or higher-order feature interactions. In datasets where feature interactions are significant, the additive surrogate will be a poor approximation of the black-box model, leading to inaccurate Shapley value estimates.
-
-### Proposed Solution
-
-**Interaction-Aware InstaSHAP** using GA²M (Generalized Additive Model with pairwise interactions):
-- Augment the additive surrogate with pairwise interaction terms
-- Extend the closed-form Shapley computation to handle interactions
-- Adaptive strategy to automatically enable interactions when needed
-
-## Project Structure
-
-```
-phase3/
-├── README.md                    # This file
-├── requirements.txt             # Python dependencies
-├── gap_analysis/
-│   └── research_gap.md         # Detailed gap analysis
-├── extension/
-│   ├── enhanced_instashap.py       # Extended Shapley computation
-│   ├── interaction_aware_surrogate.py  # GA²M surrogate
-│   └── adaptive_surrogate.py       # Adaptive fidelity-based selection
-├── experiments/
-│   ├── experiment_gap_demonstration.py  # Show the gap exists
-│   ├── experiment_extension_accuracy.py # Extension accuracy
-│   ├── experiment_extension_runtime.py  # Extension runtime
-│   └── experiment_comparison.py         # Comprehensive comparison
-├── results/                     # Generated plots and tables
-├── notebooks/
-│   └── extension_walkthrough.ipynb  # End-to-end walkthrough
-└── references/
-    └── supporting_references.md     # Literature references
+```text
+What happens when the black-box model depends on interactions,
+but the InstaSHAP surrogate is only additive?
 ```
 
-## Setup Instructions
+## Short answer
 
-1. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+The additive surrogate can become misspecified, so its explanations may be analytically correct for the surrogate while still being wrong for the real black-box behavior.
 
-2. **Run gap demonstration:**
-   ```bash
-   python experiments/experiment_gap_demonstration.py
-   ```
+## Proposed fix
 
-3. **Run extension experiments:**
-   ```bash
-   python experiments/experiment_extension_accuracy.py
-   python experiments/experiment_extension_runtime.py
-   python experiments/experiment_comparison.py
-   ```
+Interaction-Aware InstaSHAP:
+- add pairwise interaction terms
+- preserve interpretability
+- split interaction contributions fairly across the participating features
+- use adaptive selection so extra complexity is only added when needed
 
-4. **View notebook walkthrough:**
-   ```bash
-   jupyter notebook notebooks/extension_walkthrough.ipynb
-   ```
+## How InstaSHAP works in this branch
 
-## Key Contributions
+```text
+1. create coalition-based training targets from the black-box
+2. fit a surrogate that can include pairwise terms
+3. center each learned term
+4. allocate single-feature terms directly
+5. split each pairwise term across the two features
+6. return fast one-pass explanations from the learned surrogate structure
+```
 
-1. **Gap Identification:** Formal analysis of InstaSHAP's additive limitation
-2. **Interaction-Aware Surrogate:** GA²M implementation with pairwise terms
-3. **Extended Shapley Formula:** Fair allocation of interaction contributions
-4. **Adaptive Strategy:** Automatic surrogate selection based on fidelity
-5. **Comprehensive Evaluation:** Accuracy, runtime, and fidelity comparisons
+This branch is focused on making the explanation model class match the black-box behavior better when interactions matter.
 
-## Expected Results
+## Beginner example
 
-- **Improved accuracy** on interaction-heavy datasets
-- **Similar accuracy** on non-interaction datasets (no harm)
-- **Modest runtime increase** while still much faster than Exact SHAP
-- **Better surrogate fidelity** when interactions matter
+```text
+house_price depends on:
+  size
+  neighborhood
 
-## References
+But the effect of size is different in different neighborhoods.
 
-See `references/supporting_references.md` for the literature supporting this extension.
+Additive model:
+  effect(size) + effect(neighborhood)
+
+Interaction-aware model:
+  effect(size)
+  + effect(neighborhood)
+  + effect(size, neighborhood)
+```
+
+## What this folder is best at
+
+- explaining the assignment logic
+- describing the research gap clearly
+- showing why this is a valid Phase 3 extension
+
+## What this folder is not best at
+
+It is not the strongest evidence folder for final results. For saved outputs and the most complete interaction-aware run, open `../phase3_3_VERSION/README.md`.
+
+## Key files
+
+- `gap_analysis/research_gap.md`
+- `extension/interaction_aware_surrogate.py`
+- `extension/enhanced_instashap.py`
+- `extension/adaptive_surrogate.py`
+- `experiments/experiment_comparison.py`
+
+## Important limitation
+
+This track fixes the interaction problem, but not the masked-data realism problem. If the coalition construction itself is unrealistic, explanation quality can still degrade.
+
+## What improves and what still fails
+
+What improves:
+- the model can express pairwise synergy instead of pretending everything is additive
+- the assignment story is cleaner and easier to justify
+
+What still fails:
+- masking/data-manifold issues remain
+- explanation quality can still lag even when surrogate fidelity improves
+- sequence-generation and raw LLM use remain out of scope for the current design
+
+## LLM note
+
+This design is still mainly for structured inputs with stable feature groups. It is not a direct drop-in solution for explaining raw LLM token generation.

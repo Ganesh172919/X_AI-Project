@@ -1,99 +1,114 @@
-# Phase 3 — Interaction-Aware InstaSHAP Extension
+# Phase 3: Interaction-Aware InstaSHAP Extension
 
-**Course:** DS357 — Explainable AI
+This folder is the first clear Phase 3 interaction-aware prototype in the repository.
 
-**Paper:** *"InstaSHAP: Interpretable Additive Models Explain Shapley Values Instantly"* (ICLR 2025)
+## What problem this folder studies
 
----
+Original InstaSHAP is fast because it uses an additive surrogate. The downside is that additive models cannot represent strong feature interactions.
 
-## Research Gap
+Simple example:
 
-InstaSHAP relies on **purely additive surrogates** (GAMs/EBMs) that cannot capture **feature interactions**. On datasets where the black-box model relies on pairwise or higher-order interactions (e.g., XOR patterns, multiplicative effects), the additive surrogate is a poor fit, leading to inaccurate Shapley values.
+```text
+True model: y = x1 * x2
 
-## Proposed Extension
-
-**Interaction-Aware InstaSHAP** replaces the additive GAM with a **GA²M** (Generalized Additive Model with Pairwise Interactions):
-
-```
-f(x) = f_0 + Σ_j f_j(x_j) + Σ_{(j,k)} f_{jk}(x_j, x_k)
+If x1 changes alone, the effect depends on x2.
+An additive model cannot represent that exactly.
 ```
 
-The closed-form Shapley computation is extended: each pairwise interaction `f_{jk}` is split equally between features `j` and `k`:
+That mismatch causes two problems:
+- the surrogate can become a weak approximation of the black-box
+- the resulting feature attributions can drift away from exact SHAP
 
-```
-φ_j = (f_j(x_j) - E[f_j]) + Σ_{k≠j} 0.5 × (f_{jk}(x_j, x_k) - E[f_{jk}])
-```
+## What this folder proposes
 
-An **adaptive strategy** automatically selects between additive and interaction-aware surrogates based on fidelity.
+Use an interaction-aware GA2M-style surrogate:
 
----
-
-## Project Structure
-
-```
-phase3/
-├── README.md
-├── requirements.txt
-├── gap_analysis/
-│   └── research_gap.md         ← Gap identification & justification
-├── extension/
-│   ├── interaction_aware_surrogate.py  ← GA²M surrogate fitting
-│   ├── enhanced_instashap.py           ← Extended Shapley computation
-│   └── adaptive_surrogate.py           ← Auto-select additive vs GA²M
-├── experiments/
-│   ├── experiment_gap_demonstration.py  ← Show where additive fails
-│   ├── experiment_extension_accuracy.py ← GA²M improves accuracy
-│   ├── experiment_extension_runtime.py  ← GA²M still fast
-│   └── experiment_comparison.py         ← Full method comparison
-├── results/                    ← Generated plots & CSVs
-├── notebooks/
-│   └── extension_walkthrough.ipynb
-└── references/
-    └── supporting_references.md
+```text
+f(x) = bias
+     + sum of single-feature effects
+     + sum of pairwise interaction effects
 ```
 
----
+Then split each pairwise interaction contribution equally across the two features when producing InstaSHAP values.
 
-## Setup
+## How InstaSHAP works in this branch
 
-```bash
-cd phase3
-pip install -r requirements.txt
+```text
+sample coalition masks
+    ->
+fit an additive surrogate first
+    ->
+measure whether the additive surrogate is faithful enough
+    ->
+upgrade to a pairwise interaction-aware surrogate when needed
+    ->
+convert surrogate terms into fast per-feature explanations
 ```
 
-Phase 3 imports from Phase 2 as a sibling package. Ensure the project root is on your Python path.
+The key change is that the surrogate is allowed to learn pairwise terms instead of only single-feature terms.
 
----
+## Flow
 
-## Running Experiments
-
-```bash
-# Step 1: Demonstrate the gap
-python experiments/experiment_gap_demonstration.py
-
-# Step 2: Show extension improves accuracy
-python experiments/experiment_extension_accuracy.py
-
-# Step 3: Show runtime is still fast
-python experiments/experiment_extension_runtime.py
-
-# Step 4: Comprehensive comparison
-python experiments/experiment_comparison.py
+```text
+train black-box
+    ->
+fit additive surrogate
+    ->
+check fidelity
+    ->
+if fidelity is poor, fit interaction-aware surrogate
+    ->
+compute InstaSHAP values from the surrogate terms
 ```
 
----
+## What to open inside this folder
 
-## Key Expected Results
+- `gap_analysis/research_gap.md` -> why the additive assumption fails
+- `extension/interaction_aware_surrogate.py` -> how pairwise terms are added
+- `extension/enhanced_instashap.py` -> how interaction terms are allocated
+- `extension/adaptive_surrogate.py` -> how the upgrade decision is made
+- `experiments/experiment_gap_demonstration.py` -> where failure is shown
 
-| Dataset | Additive R² | GA²M R² | Additive Pearson | GA²M Pearson |
-|---------|------------|---------|-----------------|-------------|
-| XOR Synthetic | ~0.70-0.85 | ~0.95+ | ~0.70-0.80 | ~0.93+ |
-| California Housing | ~0.98+ | ~0.98+ | ~0.95+ | ~0.95+ |
+## Best use case for this folder
 
-**Key insight:** GA²M dramatically helps on interaction-heavy data while maintaining similar performance on additive-dominated data.
+Use this folder when the failure source is:
 
----
+```text
+the model depends on feature interactions
+```
 
-## References
+Typical examples:
+- `friedman1`
+- XOR-like patterns
+- price models where location and size interact
+- risk models where a feature matters only when another feature is high
 
-See `references/supporting_references.md` for full citations.
+## What improves here
+
+- the surrogate can represent pairwise effects instead of forcing everything into separate feature terms
+- the explanation rule can assign part of an interaction back to each participating feature
+- interaction-heavy samples become more explainable in principle than under a purely additive surrogate
+
+## What still fails here
+
+- unrealistic masking is still unsolved
+- higher-order interactions beyond pairs are still not handled directly
+- better surrogate fidelity does not guarantee better final attribution metrics
+- raw LLM generation remains a poor fit for the current tabular-style setup
+
+## Main limitation of this folder
+
+This branch improves representation, but it does not solve the masking problem. If masked coalitions are unrealistic, explanation quality can still suffer even with a better surrogate.
+
+## Can this be used with a fine-tuned model?
+
+Yes, if the fine-tuned model still uses stable feature groups and predicts a fixed target.
+
+No, not directly for raw LLM generation, because:
+- tokens are not stable tabular features
+- masking changes language meaning
+- outputs are sequences, not one fixed scalar
+
+## Best next folder after this one
+
+If you want the most complete version of this track, open `../phase3_3_VERSION/README.md`.

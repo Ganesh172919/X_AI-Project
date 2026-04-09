@@ -4,24 +4,33 @@ This folder contains the detailed documentation for the standalone Phase 3 Cover
 
 ## Recommended Reading Order
 
-1. `overview.md`
-2. `methodology.md`
-3. `architecture.md`
-4. `experiments.md`
-5. `outputs.md`
-6. `file_reference.md`
+1. `phase3_beginner_guide.md`
+2. `overview.md`
+3. `methodology.md`
+4. `architecture.md`
+5. `experiments.md`
+6. `outputs.md`
+7. `file_reference.md`
 
 ## What These Docs Cover
 
-- the Phase 3 research objective and research gap
-- the baseline and improved masking pipelines
-- project architecture and module responsibilities
-- the experiment workflow and generated artifacts
-- file-level guidance for reviewers, graders, and future maintainers
+- what InstaSHAP is doing in Phase 3
+- why the current system fails in interaction-heavy and masking-heavy cases
+- how the Covertype branch changes coalition construction
+- how the full pipeline runs from CLI to reports
+- what improved, what did not, and why that matters
+- beginner-friendly examples, flow diagrams, and practical reading order
+
+## Start Here
+
+- If you are new to the project, open `phase3_beginner_guide.md` first.
+- If you want the shortest summary, open `../README.md`.
+- If you want the assignment goal, open `../project_goal/README.md`.
 
 ## Main Related Files
 
 - `../README.md`
+- `../project_goal/README.md`
 - `../reports/phase3_experiment_report.md`
 - `../reports/phase3_research_gap_1page.md`
 - `../AI_USAGE.md`
