@@ -1,8 +1,7 @@
 Phase 3: Research Gap Identification and Extension
 Deadline: 3rd April
 Marks: 10 Marks
-Task
-Identify a limitation in the original paper and propose a solution.
+Task dentify a limitation in the original paper and propose a solution.
 Expected Work
 • Clearly define research gap
 • Propose and implement one improvement (supported by good reference from

@@ -8,8 +8,8 @@ The comparison focuses on two models: `instashap_zero` and `instashap_bg`. We ju
 
 ```text
          model  accuracy_mean  log_loss_mean  explanation_mae_mean  explanation_spearman_mean  coalition_mse_mean  explain_seconds_mean
-instashap_zero         0.6098         0.9312                0.2805                     0.4951              0.2863                0.0035
-  instashap_bg         0.6135         0.9356                0.3109                     0.4518              0.3793                0.0050
+instashap_zero         0.6842         0.7815                0.3591                     0.5650              0.2021                0.0100
+  instashap_bg         0.6774         0.8168                0.3795                     0.5835              0.2016                0.0121
 ```
 
 ## References
