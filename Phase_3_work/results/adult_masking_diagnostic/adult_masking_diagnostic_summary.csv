@@ -1,0 +1,3 @@
+strategy,dataset,hidden_feature_fraction,hidden_categorical_groups_evaluated,hidden_categorical_valid_rate,hidden_categorical_invalid_rate,hidden_numeric_entries_evaluated,hidden_numeric_exact_zero_rate,nearest_train_distance_mean
+zero_mask,adult_income,0.5102,1049,0.0000,1.0000,649,1.0000,2.1893
+empirical_background,adult_income,0.5102,4196,1.0000,0.0000,2596,0.0000,1.3329

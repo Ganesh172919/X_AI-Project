@@ -2,7 +2,7 @@
 
 ## Tool Used
 
-- OpenAI Codex / GPT-based coding assistant
+-> converstaional ai
 
 ## How AI Was Used
 

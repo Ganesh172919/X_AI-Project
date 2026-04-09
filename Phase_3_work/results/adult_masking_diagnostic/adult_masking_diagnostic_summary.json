@@ -1,0 +1,30 @@
+{
+  "dataset": "adult_income",
+  "max_rows": 12000,
+  "evaluation_rows": 256,
+  "hidden_feature_fraction": 0.5102163461538461,
+  "strategies": [
+    {
+      "strategy": "zero_mask",
+      "dataset": "adult_income",
+      "hidden_feature_fraction": "0.5102",
+      "hidden_categorical_groups_evaluated": "1049",
+      "hidden_categorical_valid_rate": "0.0000",
+      "hidden_categorical_invalid_rate": "1.0000",
+      "hidden_numeric_entries_evaluated": "649",
+      "hidden_numeric_exact_zero_rate": "1.0000",
+      "nearest_train_distance_mean": "2.1893"
+    },
+    {
+      "strategy": "empirical_background",
+      "dataset": "adult_income",
+      "hidden_feature_fraction": "0.5102",
+      "hidden_categorical_groups_evaluated": "4196",
+      "hidden_categorical_valid_rate": "1.0000",
+      "hidden_categorical_invalid_rate": "0.0000",
+      "hidden_numeric_entries_evaluated": "2596",
+      "hidden_numeric_exact_zero_rate": "0.0000",
+      "nearest_train_distance_mean": "1.3329"
+    }
+  ]
+}
