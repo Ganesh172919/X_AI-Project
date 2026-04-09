@@ -40,3 +40,8 @@
 09:56:13 | INFO | phase3.run.complete | reports={"experiment_markdown": "reports\\phase3_experiment_report.md", "experiment_pdf": "reports\\phase3_experiment_report.pdf", "gap_markdown": "reports\\phase3_research_gap_1page.md", "gap_pdf": "reports\\phase3_research_gap_1page.pdf"} summary_path="C:\\Users\\RAVIPRAKASH\\Downloads\\X_AI-Project\\Phase_3_work\\results\\artifacts\\covertype\\covertype_phase3_summary.json"
 09:59:04 | INFO | phase3.cli.start | dataset="covertype" fast_dev_run=false report_only=true variant="compare"
 09:59:10 | INFO | phase3.report.ready | reports={"experiment_markdown": "reports\\phase3_experiment_report.md", "experiment_pdf": "reports\\phase3_experiment_report.pdf", "gap_markdown": "reports\\phase3_research_gap_1page.md", "gap_pdf": "reports\\phase3_research_gap_1page.pdf"}
+18:31:15 | INFO | phase3.cli.start | dataset="covertype" fast_dev_run=false report_only=false variant="compare"
+18:40:21 | INFO | phase3.start | dataset="covertype" variant="compare"
+18:40:21 | INFO | seed.start | dataset="covertype" seed=42
+18:43:15 | INFO | phase3.cli.start | dataset="covertype" fast_dev_run=false report_only=false variant="compare"
+18:43:42 | INFO | phase3.cli.start | dataset="covertype" fast_dev_run=false report_only=false variant="compare"
