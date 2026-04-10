@@ -192,3 +192,17 @@ Tests:
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+## New Phase 3 Support Assets
+
+- `docs/PHASE3_IMPROVEMENT_QUICKSTART.md`
+- `docs/PHASE3_IMPROVEMENT_BEGINNER_GUIDE.md`
+- `docs/PHASE3_IMPROVEMENT_ROADMAP.md`
+- `docs/PHASE3_COVERTYPE_VS_ADULT_ANALYSIS.md`
+- `docs/PHASE3_LLM_DL_APPLICABILITY.md`
+- `docs/PHASE3_CONTINUATION_PLAN.md`
+- `docs/PHASE3_IMPROVEMENT_PRESENTATION_MASTER.md`
+- `reports/phase3_dataset_masking_diagnostic_report.md`
+- `reports/phase3_improvement_summary_1page.md`
+- `notebooks/phase3_dataset_comparison_diagnostic.ipynb`
+- `prompts/phase3_dataset_extension_prompt.md`

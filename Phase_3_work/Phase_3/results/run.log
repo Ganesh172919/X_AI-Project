@@ -1,0 +1,6 @@
+11:45:23 [INFO ] main: Phase 3 InstaSHAP — variant=compare, fast_dev_run=True
+11:46:44 [INFO ] main: Phase 3 InstaSHAP — variant=compare, fast_dev_run=True
+11:50:00 [INFO ] main: Generating reports...
+11:50:07 [INFO ] main: Phase 3 complete. Results in: results/
+18:46:32 [INFO ] main: Phase 3 InstaSHAP — variant=compare, fast_dev_run=False
+18:48:33 [INFO ] main: Phase 3 InstaSHAP — variant=compare, fast_dev_run=False

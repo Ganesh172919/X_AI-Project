@@ -1,0 +1,5 @@
+variant,explanation_mse_mean,explanation_mse_std,explanation_mae_mean,explanation_mae_std,spearman_rho_mean,spearman_rho_std,convergence_epoch_mean,convergence_epoch_std
+instashap_zero,0.0876491591334343,0.0,0.25878697633743286,0.0,0.3037878787878788,0.0,3.0,0.0
+instashap_bg,0.1287211775779724,0.0,0.31259700655937195,0.0,0.09242424242424242,0.0,3.0,0.0
+instashap_curriculum,0.12686356902122498,0.0,0.31562232971191406,0.0,0.30265151515151517,0.0,3.0,0.0
+instashap_full,0.11082975566387177,0.0,0.30180999636650085,0.0,0.3715909090909091,0.0,3.0,0.0
