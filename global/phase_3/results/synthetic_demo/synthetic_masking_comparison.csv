@@ -1,3 +1,0 @@
-strategy,hidden_categorical_valid_rate,hidden_categorical_invalid_rate,hidden_categorical_groups_evaluated,hidden_numeric_exact_zero_rate,hidden_numeric_entries_evaluated,nearest_train_distance_mean,surrogate_accuracy,surrogate_f1,surrogate_mse_vs_blackbox,spearman_rank_correlation,explanation_mae,wall_time_seconds
-zero_mask,0.0,1.0,30057,1.0,39870,1.4551,0.9695,0.9685,0.013826,0.7975,0.05957,15.18
-empirical_background,1.0,0.0,30146,0.0,40155,1.4485,0.846,0.8233,0.089445,1.0,0.0,24.99
