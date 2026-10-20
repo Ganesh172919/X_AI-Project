@@ -1,0 +1,2 @@
+dataset,showcase_score,categorical_features,one_hot_expansion,reason
+adult_income,0.7971,8,81,best current masking showcase dataset

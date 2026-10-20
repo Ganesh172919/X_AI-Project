@@ -5,7 +5,6 @@ from dataclasses import dataclass
 
 import numpy as np
 import shap
-import torch
 
 from data.preprocessing import TabularPreprocessor
 
@@ -27,6 +26,7 @@ def compute_shap_values(
 ) -> ShapExplanationResult:
     """Compute permutation SHAP with feature-group aggregation."""
     explainer = shap.Explainer(model_fn, X_background, algorithm="permutation")
+    max_evals = max(max_evals, 2 * X_explain.shape[1] + 1)
     explanation = explainer(X_explain, max_evals=max_evals)
 
     raw_values = np.asarray(explanation.values, dtype=np.float32)

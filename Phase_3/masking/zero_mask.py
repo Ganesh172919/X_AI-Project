@@ -1,7 +1,6 @@
 """Baseline zero-masking strategy (reproduces Phase 2 behavior)."""
 
 from __future__ import annotations
-import numpy as np
 import torch
 
 from data.preprocessing import TabularPreprocessor

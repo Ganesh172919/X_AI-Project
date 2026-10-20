@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InstaSHAP: Instant Model Explanation – Interactive Presentation</title>
+  <meta name="description" content="Interactive visual presentation of InstaSHAP workflow, optimization, limitations, and improvements.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+
+<!-- ====== TOP PROGRESS BAR ====== -->
+<div id="top-progress"></div>
+
+<!-- ====== PRESENTATION CONTAINER ====== -->
+<div id="presentation">
+
+<!-- ============================================================
+     SECTION 1: MOTIVATION (Slides 1–7)
+     ============================================================ -->
+
+<!-- Slide 1: Title Slide -->
+<div class="slide" data-section="Motivation">
+  <div class="title-bg-orb orb-1"></div>
+  <div class="title-bg-orb orb-2"></div>
+  <div class="title-bg-orb orb-3"></div>
+  <div class="particle-overlay"><canvas id="title-particles"></canvas></div>
+  <div class="slide-content" style="text-align:center; z-index:2;">
+    <div class="section-badge accent">Research Presentation</div>
+    <h1 class="slide-title" style="font-size:clamp(2.2rem,5vw,4rem);">InstaSHAP</h1>
+    <p class="slide-subtitle" style="font-size:clamp(1rem,2.5vw,1.6rem); max-width:700px; margin:0 auto;">
+      Instant Model Explanation<br>
+      <span style="color:var(--clr-accent);">Internal Workflow · Optimization · Limitations</span>
+    </p>
+    <div style="margin-top:var(--space-xl); display:flex; gap:var(--space-md); justify-content:center; flex-wrap:wrap;">
+      <span class="tag blue">XAI</span>
+      <span class="tag purple">Deep Learning</span>
+      <span class="tag orange">Approximation</span>
+      <span class="tag green">SHAP Values</span>
+    </div>
+    <p style="margin-top:var(--space-2xl); color:var(--clr-text-dim); font-size:0.85rem;">
+      Press <kbd style="background:var(--clr-surface);padding:2px 8px;border-radius:4px;">→</kbd> or <kbd style="background:var(--clr-surface);padding:2px 8px;border-radius:4px;">Space</kbd> to navigate &nbsp;|&nbsp; <kbd style="background:var(--clr-surface);padding:2px 8px;border-radius:4px;">F</kbd> for fullscreen
+    </p>
+  </div>
+  <div class="watermark">InstaSHAP Interactive Presentation</div>
+</div>
+
+<!-- Slide 2: The Problem with SHAP -->
+<div class="slide" data-section="Motivation">
+  <div class="slide-content">
+    <div class="section-badge error">⚠️ Problem</div>
+    <h1 class="slide-title error-title">The SHAP Bottleneck</h1>
+    <p class="slide-subtitle">Traditional SHAP requires evaluating <strong style="color:var(--clr-error);">ALL 2ⁿ</strong> feature subsets for exact Shapley values</p>
+    <div class="canvas-container">
+      <canvas id="exp-growth-chart"></canvas>
+    </div>
+    <div class="highlight-box" style="margin-top:var(--space-md); text-align:center;">
+      <strong>10 features → 1,024 subsets</strong> &nbsp;|&nbsp;
+      <strong>20 features → 1,048,576 subsets</strong> &nbsp;|&nbsp;
+      <strong style="color:var(--clr-error);">50 features → 10¹⁵ subsets 💥</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 3: Computational Cost -->
+<div class="slide" data-section="Motivation">
+  <div class="slide-content">
+    <div class="section-badge error">⏱️ Cost</div>
+    <h1 class="slide-title error-title">Computational Explosion</h1>
+    <p class="slide-subtitle">Time grows exponentially — making exact SHAP impractical for real models</p>
+    <div class="canvas-container">
+      <canvas id="complexity-chart-1"></canvas>
+    </div>
+    <ul class="bullets" style="margin-top:var(--space-md);">
+      <li><span class="bullet-icon red">!</span> Each subset requires a FULL model forward pass</li>
+      <li><span class="bullet-icon red">!</span> GPU cost scales linearly with subsets × batch size</li>
+      <li><span class="bullet-icon red">!</span> Real-time explanations? Impossible with exact SHAP</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Slide 4: Real-World Need -->
+<div class="slide" data-section="Motivation">
+  <div class="slide-content">
+    <div class="section-badge accent">🌍 Real World</div>
+    <h1 class="slide-title">Why We Need Fast Explanations</h1>
+    <div class="grid-3" style="margin-top:var(--space-lg);">
+      <div class="card glass">
+        <h3>🏥 Healthcare</h3>
+        <p style="color:var(--clr-text-dim); font-size:0.9rem;">Doctors need instant explanation of diagnostic predictions. Can't wait 5 min per patient.</p>
+        <div class="tag green" style="margin-top:var(--space-sm);">Latency-critical</div>
+      </div>
+      <div class="card glass">
+        <h3>🏦 Finance</h3>
+        <p style="color:var(--clr-text-dim); font-size:0.9rem;">Loan decisions require explainability by law. Millions of applications daily.</p>
+        <div class="tag blue" style="margin-top:var(--space-sm);">Regulatory</div>
+      </div>
+      <div class="card glass">
+        <h3>🤖 LLMs / Vision</h3>
+        <p style="color:var(--clr-text-dim); font-size:0.9rem;">Models with 1000+ features. SHAP would take days per explanation.</p>
+        <div class="tag red" style="margin-top:var(--space-sm);">Infeasible</div>
+      </div>
+    </div>
+    <ul class="bullets" style="margin-top:var(--space-lg);">
+      <li><span class="bullet-icon cyan">→</span> We need SHAP-quality explanations at <strong style="color:var(--clr-accent);">millisecond speed</strong></li>
+      <li><span class="bullet-icon cyan">→</span> This is the core motivation for <strong style="color:var(--clr-shap);">InstaSHAP</strong></li>
+    </ul>
+  </div>
+</div>
+
+<!-- Slide 5: Where Existing SHAP Fails -->
+<div class="slide" data-section="Motivation">
+  <div class="slide-content">
+    <div class="section-badge error">❌ Failure Points</div>
+    <h1 class="slide-title error-title">Where Existing SHAP Fails</h1>
+    <table class="comp-table" style="margin-top:var(--space-lg);">
+      <thead>
+        <tr><th>Scenario</th><th>Exact SHAP</th><th>KernelSHAP</th><th>TreeSHAP</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>High-dim features (>50)</td><td class="cross">✗ Infeasible</td><td class="partial">⚠ Slow</td><td class="partial">⚠ Trees only</td></tr>
+        <tr><td>Real-time inference</td><td class="cross">✗ Too slow</td><td class="cross">✗ Too slow</td><td class="partial">⚠ Fast for trees</td></tr>
+        <tr><td>Deep Learning / LLMs</td><td class="cross">✗ Impossible</td><td class="partial">⚠ Very slow</td><td class="cross">✗ N/A</td></tr>
+        <tr><td>Batch processing (10K+)</td><td class="cross">✗ Days</td><td class="partial">⚠ Hours</td><td class="check">✓ If tree-based</td></tr>
+        <tr><td>Model-agnostic</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗ Trees only</td></tr>
+      </tbody>
+    </table>
+    <div class="highlight-box" style="margin-top:var(--space-lg); text-align:center;">
+      <strong style="color:var(--clr-accent);">Gap:</strong> No method is both <strong>fast</strong>, <strong>model-agnostic</strong>, and <strong>accurate</strong>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 6: The Speed-Accuracy Gap -->
+<div class="slide" data-section="Motivation">
+  <div class="slide-content">
+    <div class="section-badge sampling">📊 Trade-off</div>
+    <h1 class="slide-title">The Speed vs Accuracy Gap</h1>
+    <p class="slide-subtitle">Every existing method sacrifices something — InstaSHAP aims for the sweet spot</p>
+    <div class="canvas-container">
+      <canvas id="tradeoff-chart-1"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 7: Enter InstaSHAP -->
+<div class="slide" data-section="Motivation">
+  <div class="slide-content" style="text-align:center;">
+    <div class="section-badge shap">💡 Solution</div>
+    <h1 class="slide-title success-title" style="font-size:clamp(2rem,4vw,3.5rem);">Enter: InstaSHAP</h1>
+    <p class="slide-subtitle" style="max-width:600px; margin:0 auto;">
+      A method that trades <span style="color:var(--clr-sampling);">marginal exactness</span> for
+      <span style="color:var(--clr-shap);">dramatic speed gains</span> — making SHAP practical for real-world AI.
+    </p>
+    <div class="grid-4" style="margin-top:var(--space-xl);">
+      <div class="metric card glass"><div class="metric-value green">120×</div><div class="metric-label">Faster</div></div>
+      <div class="metric card glass"><div class="metric-value orange">~85%</div><div class="metric-label">Accuracy</div></div>
+      <div class="metric card glass"><div class="metric-value blue">Any</div><div class="metric-label">Model Type</div></div>
+      <div class="metric card glass"><div class="metric-value purple">O(k·n)</div><div class="metric-label">Complexity</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     SECTION 2: WHAT IS INSTASHAP (Slides 8–12)
+     ============================================================ -->
+
+<!-- Slide 8: Intuitive Analogy -->
+<div class="slide" data-section="What is InstaSHAP">
+  <div class="slide-content">
+    <div class="section-badge accent">💡 Intuition</div>
+    <h1 class="slide-title">InstaSHAP: The Shortcut Analogy</h1>
+    <div class="vs-layout" style="margin-top:var(--space-xl);">
+      <div class="card glass" style="text-align:center;">
+        <h3 style="color:var(--clr-error);">Exact SHAP</h3>
+        <p style="font-size:3rem; margin:var(--space-md) 0;">🏔️</p>
+        <p style="color:var(--clr-text-dim);">Climbs every mountain path to measure the view from every angle</p>
+        <div class="tag red" style="margin-top:var(--space-sm);">Exhaustive</div>
+      </div>
+      <div class="vs-divider">
+        <span>VS</span>
+        <span style="font-size:2rem;">⚡</span>
+      </div>
+      <div class="card glass" style="text-align:center;">
+        <h3 style="color:var(--clr-shap);">InstaSHAP</h3>
+        <p style="font-size:3rem; margin:var(--space-md) 0;">🚁</p>
+        <p style="color:var(--clr-text-dim);">Takes a helicopter — samples a few key viewpoints and estimates the full picture</p>
+        <div class="tag green" style="margin-top:var(--space-sm);">Smart Sampling</div>
+      </div>
+    </div>
+    <div class="highlight-box" style="margin-top:var(--space-lg); text-align:center;">
+      <strong>Core Idea:</strong> Instead of evaluating ALL feature coalitions, sample a <strong style="color:var(--clr-accent);">strategic subset</strong> and estimate contributions
+    </div>
+  </div>
+</div>
+
+<!-- Slide 9: Core Mechanism -->
+<div class="slide" data-section="What is InstaSHAP">
+  <div class="slide-content">
+    <div class="section-badge shap">⚙️ Core</div>
+    <h1 class="slide-title success-title">How InstaSHAP Approximates</h1>
+    <div class="grid-2" style="margin-top:var(--space-lg);">
+      <div class="flex-col">
+        <h3>Traditional Shapley Computation</h3>
+        <div class="math">φᵢ = Σ |S|!(n-|S|-1)!/n! × [f(S∪{i}) - f(S)]</div>
+        <p style="color:var(--clr-text-dim); font-size:0.9rem; margin-top:var(--space-sm);">
+          Sums over <strong>ALL</strong> subsets S ⊆ N\{i}<br>
+          → 2ⁿ⁻¹ evaluations per feature<br>
+          → n × 2ⁿ⁻¹ total model calls
+        </p>
+      </div>
+      <div class="flex-col">
+        <h3 style="color:var(--clr-shap);">InstaSHAP Approximation</h3>
+        <div class="math" style="border-color:rgba(16,185,129,0.3);">φ̂ᵢ ≈ (1/k) Σⱼ₌₁ᵏ [f(Sⱼ∪{i}) - f(Sⱼ)]</div>
+        <p style="color:var(--clr-text-dim); font-size:0.9rem; margin-top:var(--space-sm);">
+          Samples only <strong style="color:var(--clr-shap);">k</strong> random subsets<br>
+          → k evaluations per feature (k ≪ 2ⁿ)<br>
+          → n × k total model calls
+        </p>
+      </div>
+    </div>
+    <div class="highlight-box" style="margin-top:var(--space-lg); text-align:center;">
+      <strong>Key Insight:</strong> With k = 50 and n = 20, InstaSHAP uses 1,000 calls vs exact's 10,485,760
+    </div>
+  </div>
+</div>
+
+<!-- Slide 10: Comparison Table -->
+<div class="slide" data-section="What is InstaSHAP">
+  <div class="slide-content">
+    <div class="section-badge accent">📊 Comparison</div>
+    <h1 class="slide-title">SHAP Methods: Head-to-Head</h1>
+    <table class="comp-table" style="margin-top:var(--space-lg);">
+      <thead>
+        <tr><th>Property</th><th>Exact SHAP</th><th>KernelSHAP</th><th>TreeSHAP</th><th style="color:var(--clr-shap);">InstaSHAP</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Complexity</td><td>O(2ⁿ)</td><td>O(k²·n)</td><td>O(TL·2ᴹ)</td><td class="check">O(k·n)</td></tr>
+        <tr><td>Model-agnostic</td><td class="check">✓</td><td class="check">✓</td><td class="cross">✗</td><td class="check">✓</td></tr>
+        <tr><td>Exactness</td><td class="check">Exact</td><td class="partial">Approx</td><td class="check">Exact*</td><td class="partial">Approx</td></tr>
+        <tr><td>Speed (10 features)</td><td>~4200ms</td><td>~850ms</td><td>~120ms</td><td class="check">~35ms</td></tr>
+        <tr><td>DL Compatible</td><td class="cross">✗</td><td class="partial">Slow</td><td class="cross">✗</td><td class="check">✓</td></tr>
+        <tr><td>Interaction-aware</td><td class="check">✓</td><td class="partial">Limited</td><td class="check">✓</td><td class="cross">✗</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Slide 11: Pipeline Overview -->
+<div class="slide" data-section="What is InstaSHAP">
+  <div class="slide-content">
+    <div class="section-badge shap">🔄 Pipeline</div>
+    <h1 class="slide-title success-title">InstaSHAP Pipeline Overview</h1>
+    <p class="slide-subtitle">Six stages from input to explanation — let's trace through each one</p>
+    <div class="pipeline" style="margin-top:var(--space-xl);">
+      <div class="pipeline-step input"><span class="step-num">Step 1</span><span class="step-label">Input Sample</span></div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-step input"><span class="step-num">Step 2</span><span class="step-label">Perturb Features</span></div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-step sampling"><span class="step-num">Step 3</span><span class="step-label">Sample Subsets</span></div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-step model"><span class="step-num">Step 4</span><span class="step-label">Model Predict</span></div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-step shap"><span class="step-num">Step 5</span><span class="step-label">Compute Contrib</span></div>
+      <span class="pipeline-arrow">→</span>
+      <div class="pipeline-step shap"><span class="step-num">Step 6</span><span class="step-label">SHAP Output</span></div>
+    </div>
+    <div class="highlight-box" style="margin-top:var(--space-xl); text-align:center;">
+      Next: We'll trace <strong>ONE prediction</strong> through all 6 steps with a real MLP neural network →
+    </div>
+  </div>
+</div>
+
+<!-- Slide 12: Transition -->
+<div class="slide" data-section="What is InstaSHAP">
+  <div class="slide-content" style="text-align:center;">
+    <h1 class="slide-title" style="font-size:clamp(2rem,5vw,4rem);">🔬 Deep Dive</h1>
+    <p class="slide-subtitle" style="font-size:1.4rem;">
+      One Prediction · One Neural Network · Step by Step
+    </p>
+    <p style="color:var(--clr-text-dim); font-size:1rem; max-width:600px; margin:var(--space-lg) auto 0;">
+      We'll use a sample input <code style="color:var(--clr-input);">[Age=35, Income=75K, Score=0.8]</code>
+      and trace it through an MLP to see exactly how InstaSHAP generates feature explanations.
+    </p>
+  </div>
+</div>
+
+<!-- ============================================================
+     SECTION 3: FULL WORKFLOW (Slides 13–35)
+     ============================================================ -->
+
+<!-- STEP 1: INPUT + MODEL -->
+<!-- Slide 13: Input Sample -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge input">Step 1 · Input</div>
+    <h1 class="slide-title">Step 1: Input Sample</h1>
+    <p class="slide-subtitle">A single data point enters the pipeline</p>
+    <div class="grid-2">
+      <div class="card glass">
+        <h3>Sample Instance</h3>
+        <div class="code-block">
+x = {
+  Age:    35,      // Normalized: 0.45
+  Income: 75000,   // Normalized: 0.72
+  Score:  0.80     // Already [0,1]
+}
+Target: Predict credit approval probability</div>
+        <div style="margin-top:var(--space-md);">
+          <div class="feature-bar"><span class="bar-label">Age</span><div class="bar-track"><div class="bar-fill positive" style="--bar-width:45%;">0.45</div></div></div>
+          <div class="feature-bar"><span class="bar-label">Income</span><div class="bar-track"><div class="bar-fill positive" style="--bar-width:72%;">0.72</div></div></div>
+          <div class="feature-bar"><span class="bar-label">Score</span><div class="bar-track"><div class="bar-fill positive" style="--bar-width:80%;">0.80</div></div></div>
+        </div>
+      </div>
+      <div class="flex-col">
+        <h3>What happens internally</h3>
+        <ul class="bullets">
+          <li><span class="bullet-icon blue">1</span> Raw features are collected for the instance</li>
+          <li><span class="bullet-icon blue">2</span> Features are normalized to [0,1] range</li>
+          <li><span class="bullet-icon blue">3</span> Feature vector x ∈ ℝⁿ is prepared for perturbation</li>
+          <li><span class="bullet-icon cyan">!</span> <strong>No approximation yet</strong> — this is identical to exact SHAP</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 14: The MLP Model -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge model">Step 1 · Model</div>
+    <h1 class="slide-title">The Trained Model: MLP Neural Network</h1>
+    <p class="slide-subtitle">A 3-layer perceptron that we need to explain</p>
+    <div class="canvas-container" style="max-height:380px;">
+      <canvas id="nn-full"></canvas>
+    </div>
+    <div class="grid-3" style="margin-top:var(--space-md);">
+      <div class="card glass" style="text-align:center;">
+        <div class="metric-value blue" style="font-size:1.5rem;">3</div>
+        <div class="metric-label">Input Nodes</div>
+      </div>
+      <div class="card glass" style="text-align:center;">
+        <div class="metric-value purple" style="font-size:1.5rem;">5 → 4</div>
+        <div class="metric-label">Hidden Layers</div>
+      </div>
+      <div class="card glass" style="text-align:center;">
+        <div class="metric-value green" style="font-size:1.5rem;">1</div>
+        <div class="metric-label">Output (P(approval))</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 15: Forward Pass -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge model">Step 1 · Forward Pass</div>
+    <h1 class="slide-title">Forward Propagation: f(x) = 0.82</h1>
+    <p class="slide-subtitle">Data flows through the network — watch the activation propagate</p>
+    <div class="canvas-container" style="max-height:350px;">
+      <canvas id="nn-forward"></canvas>
+    </div>
+    <div class="highlight-box" style="margin-top:var(--space-md); text-align:center;">
+      Base prediction: <strong style="color:var(--clr-shap);">f(x) = 0.82</strong> — 82% approval probability<br>
+      <span style="color:var(--clr-text-dim);">Now: WHY does the model predict 0.82? Which features matter most?</span>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2: FEATURE PERTURBATION -->
+<!-- Slide 16: Feature Perturbation Concept -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge input">Step 2 · Perturbation</div>
+    <h1 class="slide-title">Step 2: Feature Perturbation Strategy</h1>
+    <p class="slide-subtitle">To measure feature importance, we mask/remove features and observe prediction changes</p>
+    <div class="grid-2" style="margin-top:var(--space-lg);">
+      <div class="flex-col">
+        <h3>The Core Question</h3>
+        <p style="color:var(--clr-text-dim);">How much does prediction change when we remove each feature?</p>
+        <div class="code-block" style="margin-top:var(--space-md);">
+Full input:    f([Age, Income, Score]) = 0.82
+Remove Age:    f([  ?, Income, Score]) = 0.75
+Remove Income: f([Age,   ?,   Score]) = 0.58
+Remove Score:  f([Age, Income,   ? ]) = 0.71</div>
+        <p style="color:var(--clr-text-dim); font-size:0.85rem; margin-top:var(--space-sm);">
+          But it's not that simple — we need to consider <em>all combinations</em> of masked features
+        </p>
+      </div>
+      <div class="flex-col">
+        <h3>Perturbation Methods</h3>
+        <ul class="bullets">
+          <li><span class="bullet-icon blue">1</span> <strong>Marginal:</strong> Replace with random value from training data</li>
+          <li><span class="bullet-icon purple">2</span> <strong>Conditional:</strong> Replace with conditional expectation</li>
+          <li><span class="bullet-icon orange">3</span> <strong>Zero-out:</strong> Set masked features to 0 (simplest)</li>
+        </ul>
+        <div class="card glass" style="margin-top:var(--space-md); border-color:rgba(245,158,11,0.3);">
+          <p style="color:var(--clr-sampling); font-size:0.85rem;"><strong>InstaSHAP default:</strong> Uses marginal perturbation — replaces masked features with random training samples</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 17: Feature Masking Visualization -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge input">Step 2 · Masking</div>
+    <h1 class="slide-title">Feature Masking in the Neural Network</h1>
+    <p class="slide-subtitle">Watch features being masked — the network processes incomplete inputs</p>
+    <div class="canvas-container" style="max-height:320px;">
+      <canvas id="nn-masked-1"></canvas>
+    </div>
+    <div class="grid-3" style="margin-top:var(--space-md);">
+      <div class="card glass" style="text-align:center;">
+        <p style="font-size:0.8rem; color:var(--clr-text-dim);">Mask: {Age}</p>
+        <div class="metric-value orange" style="font-size:1.3rem;">f = 0.75</div>
+        <div class="metric-label">Δ = -0.07</div>
+      </div>
+      <div class="card glass" style="text-align:center;">
+        <p style="font-size:0.8rem; color:var(--clr-text-dim);">Mask: {Income}</p>
+        <div class="metric-value orange" style="font-size:1.3rem;">f = 0.58</div>
+        <div class="metric-label">Δ = -0.24</div>
+      </div>
+      <div class="card glass" style="text-align:center;">
+        <p style="font-size:0.8rem; color:var(--clr-text-dim);">Mask: {Score}</p>
+        <div class="metric-value orange" style="font-size:1.3rem;">f = 0.71</div>
+        <div class="metric-label">Δ = -0.11</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 18: All Subsets Problem -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge error">Step 2 · Problem</div>
+    <h1 class="slide-title error-title">The Subset Explosion Problem</h1>
+    <p class="slide-subtitle">SHAP needs ALL combinations of masked features — that's 2ⁿ subsets</p>
+    <div class="code-block" style="font-size:0.8rem;">
+Feature subsets for 3 features (2³ = 8 total):
+┌──────┬─────────────────────┬────────────┐
+│  #   │   Features Present  │  f(S)      │
+├──────┼─────────────────────┼────────────┤
+│  1   │   { }               │  0.50      │  ← base (no features)
+│  2   │   {Age}             │  0.53      │
+│  3   │   {Income}          │  0.62      │
+│  4   │   {Score}           │  0.56      │
+│  5   │   {Age, Income}     │  0.70      │
+│  6   │   {Age, Score}      │  0.68      │
+│  7   │   {Income, Score}   │  0.76      │
+│  8   │   {Age,Income,Score} │  0.82      │  ← full prediction
+└──────┴─────────────────────┴────────────┘</div>
+    <div class="highlight-box" style="margin-top:var(--space-md); text-align:center;">
+      Only 8 subsets here — but with <strong style="color:var(--clr-error);">50 features → 10¹⁵ subsets!</strong><br>
+      <span style="color:var(--clr-shap);">InstaSHAP's solution: Don't evaluate all of them →</span>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 19: InstaSHAP Shortcut -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge sampling">Step 2 · Shortcut</div>
+    <h1 class="slide-title">InstaSHAP's Perturbation Shortcut</h1>
+    <div class="vs-layout" style="margin-top:var(--space-xl);">
+      <div class="card glass">
+        <h3 style="color:var(--clr-error);">Exact SHAP</h3>
+        <ul class="bullets">
+          <li><span class="bullet-icon red">✗</span> Evaluate ALL 2ⁿ subsets</li>
+          <li><span class="bullet-icon red">✗</span> 2ⁿ model forward passes</li>
+          <li><span class="bullet-icon red">✗</span> Exact but infeasible for n > 20</li>
+        </ul>
+      </div>
+      <div class="vs-divider"><span>VS</span></div>
+      <div class="card glass">
+        <h3 style="color:var(--clr-shap);">InstaSHAP</h3>
+        <ul class="bullets">
+          <li><span class="bullet-icon green">✓</span> Sample only k random subsets</li>
+          <li><span class="bullet-icon green">✓</span> k model forward passes (k ≪ 2ⁿ)</li>
+          <li><span class="bullet-icon orange">⚠</span> Approximate but practical</li>
+        </ul>
+      </div>
+    </div>
+    <div class="highlight-box" style="margin-top:var(--space-lg); text-align:center;">
+      <strong>What's skipped:</strong> The vast majority of feature coalitions are never evaluated<br>
+      <strong>Why it's faster:</strong> k = 50 instead of 2ⁿ = 1,048,576 (for n=20)
+    </div>
+  </div>
+</div>
+
+<!-- STEP 3: SAMPLING -->
+<!-- Slide 20: Sampling Strategy -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge sampling">Step 3 · Sampling</div>
+    <h1 class="slide-title">Step 3: Subset Sampling Strategy</h1>
+    <p class="slide-subtitle">InstaSHAP randomly selects k subsets instead of enumerating all 2ⁿ</p>
+    <div class="canvas-container" style="max-height:380px;">
+      <canvas id="sampling-viz-1"></canvas>
+    </div>
+    <ul class="bullets" style="margin-top:var(--space-md);">
+      <li><span class="bullet-icon orange">1</span> Generate k random binary masks (each mask = one subset)</li>
+      <li><span class="bullet-icon orange">2</span> Each mask determines which features are "present" vs "absent"</li>
+      <li><span class="bullet-icon orange">3</span> <strong>Uniform random sampling</strong> — no preference for any subset size</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Slide 21: Sampling Math -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge sampling">Step 3 · Math</div>
+    <h1 class="slide-title">Sampling: The Mathematical View</h1>
+    <div class="grid-2" style="margin-top:var(--space-lg);">
+      <div class="flex-col">
+        <h3>Random Mask Generation</h3>
+        <div class="code-block">
+for j = 1 to k:
+  mask[j] = random_binary_vector(n)
+  # e.g., [1, 0, 1] means
+  #   Age=present, Income=absent, Score=present
+  
+  S[j] = features where mask[j] = 1
+  x_perturbed[j] = replace absent
+                    features with
+                    training sample</div>
+      </div>
+      <div class="flex-col">
+        <h3>What's approximated here</h3>
+        <ul class="bullets">
+          <li><span class="bullet-icon orange">⚠</span> <strong>Skipped:</strong> Shapley weighting factor |S|!(n-|S|-1)!/n!</li>
+          <li><span class="bullet-icon orange">⚠</span> <strong>Assumed:</strong> Random subsets are representative of all subsets</li>
+          <li><span class="bullet-icon orange">⚠</span> <strong>Bias risk:</strong> May over/under-represent certain subset sizes</li>
+          <li><span class="bullet-icon green">✓</span> <strong>Gain:</strong> O(k) instead of O(2ⁿ) evaluations</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 22: Sampling Example -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge sampling">Step 3 · Example</div>
+    <h1 class="slide-title">Sampling: Concrete Example (k=5)</h1>
+    <div class="code-block" style="margin-top:var(--space-lg); font-size:0.85rem;">
+k = 5 sampled subsets (out of 8 possible):
+┌──────┬───────────┬──────────────────────┬──────────┐
+│ j    │  Mask     │  Present Features    │  f(Sⱼ)   │
+├──────┼───────────┼──────────────────────┼──────────┤
+│  1   │  [1,0,0]  │  {Age}               │  0.53    │
+│  2   │  [0,1,1]  │  {Income, Score}     │  0.76    │
+│  3   │  [1,1,0]  │  {Age, Income}       │  0.70    │
+│  4   │  [0,0,1]  │  {Score}             │  0.56    │
+│  5   │  [1,1,1]  │  {Age, Income, Score} │  0.82    │
+└──────┴───────────┴──────────────────────┴──────────┘
+
+Subsets NOT evaluated (skipped):
+  [0,0,0], [0,1,0], [1,0,1]  ← 3 subsets saved!</div>
+    <div class="highlight-box" style="margin-top:var(--space-md); text-align:center;">
+      <strong>37.5% reduction</strong> with only 3 features — imagine <strong style="color:var(--clr-accent);">99.99%+ reduction</strong> with 20+ features!
+    </div>
+  </div>
+</div>
+
+<!-- Slide 23-24: More sampling detail -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge sampling">Step 3 · Internals</div>
+    <h1 class="slide-title">Inside the Sampling Engine</h1>
+    <div class="canvas-container" style="max-height:350px;">
+      <canvas id="pipeline-viz-step3"></canvas>
+    </div>
+    <div class="grid-2" style="margin-top:var(--space-md);">
+      <div class="card glass">
+        <h3 style="color:var(--clr-sampling);">What happens</h3>
+        <ul class="bullets">
+          <li><span class="bullet-icon orange">1</span> Random number generator creates binary masks</li>
+          <li><span class="bullet-icon orange">2</span> Each mask creates a perturbed input vector</li>
+          <li><span class="bullet-icon orange">3</span> Absent features filled from background distribution</li>
+        </ul>
+      </div>
+      <div class="card glass">
+        <h3 style="color:var(--clr-error);">What's lost</h3>
+        <ul class="bullets">
+          <li><span class="bullet-icon red">✗</span> No guarantee all feature pairs are covered</li>
+          <li><span class="bullet-icon red">✗</span> Shapley weighting is approximated, not exact</li>
+          <li><span class="bullet-icon red">✗</span> Rare but important subsets may be missed</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 4: MODEL PREDICTION -->
+<!-- Slide 24: Batch Forward Pass -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge model">Step 4 · Predict</div>
+    <h1 class="slide-title">Step 4: Batch Model Prediction</h1>
+    <p class="slide-subtitle">Run all k perturbed inputs through the model simultaneously</p>
+    <div class="canvas-container" style="max-height:300px;">
+      <canvas id="nn-batch"></canvas>
+    </div>
+    <div class="code-block" style="margin-top:var(--space-md); font-size:0.85rem;">
+# Batch prediction — all k subsets at once (GPU-optimized)
+predictions = model.predict_batch([x_perturbed[1], x_perturbed[2], ..., x_perturbed[k]])
+# Result: [0.53, 0.76, 0.70, 0.56, 0.82]  (k predictions)</div>
+    <div class="highlight-box" style="margin-top:var(--space-md); text-align:center;">
+      <strong>Speed trick:</strong> Batch prediction runs ALL k inputs in <strong style="color:var(--clr-accent);">one GPU call</strong> instead of k separate calls
+    </div>
+  </div>
+</div>
+
+<!-- Slide 25: Forward Pass Internal -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge model">Step 4 · Internal</div>
+    <h1 class="slide-title">What Happens Inside Each Forward Pass</h1>
+    <div class="grid-2">
+      <div class="canvas-container" style="max-height:300px;">
+        <canvas id="nn-internal"></canvas>
+      </div>
+      <div class="flex-col">
+        <h3>For each perturbed input:</h3>
+        <ul class="bullets">
+          <li><span class="bullet-icon purple">1</span> Input vector enters layer 1 (3 nodes)</li>
+          <li><span class="bullet-icon purple">2</span> Weights multiply, biases add → hidden layer 1</li>
+          <li><span class="bullet-icon purple">3</span> ReLU activation applied</li>
+          <li><span class="bullet-icon purple">4</span> Hidden layer 2 processes</li>
+          <li><span class="bullet-icon purple">5</span> Sigmoid output → probability [0, 1]</li>
+        </ul>
+        <div class="card glass" style="margin-top:var(--space-sm); border-color:rgba(139,92,246,0.3);">
+          <p style="color:var(--clr-model); font-size:0.85rem;"><strong>Note:</strong> InstaSHAP treats the model as a BLACK BOX — only input/output matter, not internal weights</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 5: CONTRIBUTION ESTIMATION -->
+<!-- Slide 26: Marginal Contribution -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge shap">Step 5 · Contribution</div>
+    <h1 class="slide-title success-title">Step 5: Marginal Contribution Estimation</h1>
+    <p class="slide-subtitle">For each feature, compute: "How much does adding this feature change the prediction?"</p>
+    <div class="code-block" style="margin-top:var(--space-lg); font-size:0.82rem;">
+For feature i, using sampled subsets:
+
+φ̂ᵢ = (1/k) × Σⱼ [f(Sⱼ ∪ {i}) - f(Sⱼ)]     (only subsets where i ∉ Sⱼ)
+
+Example for feature "Income" (i=2):
+  Subset {Age}:           f({Age,Income}) - f({Age})        = 0.70 - 0.53 = 0.17
+  Subset {Score}:         f({Score,Income}) - f({Score})     = 0.76 - 0.56 = 0.20
+  Subset {}:              f({Income}) - f({})               = 0.62 - 0.50 = 0.12
+  
+  φ̂(Income) = average(0.17, 0.20, 0.12) = 0.163</div>
+    <div class="highlight-box" style="margin-top:var(--space-md); text-align:center;">
+      <strong>Key approximation:</strong> Using <strong style="color:var(--clr-sampling);">k sampled subsets</strong> instead of all 2ⁿ⁻¹ subsets containing feature i
+    </div>
+  </div>
+</div>
+
+<!-- Slide 27: Contribution for all features -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge shap">Step 5 · All Features</div>
+    <h1 class="slide-title success-title">Computing All Feature Contributions</h1>
+    <div class="grid-2" style="margin-top:var(--space-lg);">
+      <div class="flex-col">
+        <div class="code-block" style="font-size:0.82rem;">
+Feature contributions (averaged):
+
+φ̂(Age)    = avg marginal when Age added
+           = (0.03 + 0.08 + 0.06) / 3
+           = 0.057
+
+φ̂(Income) = avg marginal when Income added
+           = (0.17 + 0.20 + 0.12) / 3
+           = 0.163
+
+φ̂(Score)  = avg marginal when Score added
+           = (0.06 + 0.15 + 0.11) / 3
+           = 0.107
+
+Base value E[f(x)] ≈ 0.50
+Sum: 0.50 + 0.057 + 0.163 + 0.107 = 0.827 ≈ 0.82 ✓</div>
+      </div>
+      <div class="flex-col">
+        <h3>Contribution Bars (animated)</h3>
+        <div class="feature-bar-group" style="margin-top:var(--space-md);">
+          <div class="feature-bar"><span class="bar-label">Income</span><div class="bar-track"><div class="bar-fill positive" style="--bar-width:75%;">+0.163</div></div></div>
+          <div class="feature-bar"><span class="bar-label">Score</span><div class="bar-track"><div class="bar-fill positive" style="--bar-width:50%;">+0.107</div></div></div>
+          <div class="feature-bar"><span class="bar-label">Age</span><div class="bar-track"><div class="bar-fill positive" style="--bar-width:27%;">+0.057</div></div></div>
+        </div>
+        <div class="card glass" style="margin-top:var(--space-lg);">
+          <p style="color:var(--clr-shap); font-size:0.9rem;">
+            <strong>Income</strong> is the strongest positive contributor (+0.163)<br>
+            <strong>Score</strong> is second (+0.107)<br>
+            <strong>Age</strong> has modest positive impact (+0.057)
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide 28: Comparison vs Exact -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge sampling">Step 5 · Accuracy</div>
+    <h1 class="slide-title">Approximation vs Exact: How Close?</h1>
+    <div class="canvas-container" style="max-height:380px;">
+      <canvas id="comparison-step5"></canvas>
+    </div>
+    <ul class="bullets" style="margin-top:var(--space-md);">
+      <li><span class="bullet-icon green">✓</span> For this simple example, InstaSHAP is quite close to exact SHAP</li>
+      <li><span class="bullet-icon orange">⚠</span> Error increases with more features and complex interactions</li>
+      <li><span class="bullet-icon red">✗</span> Interaction effects (Age × Income) may be missed entirely</li>
+    </ul>
+  </div>
+</div>
+
+<!-- STEP 6: AGGREGATION & OUTPUT -->
+<!-- Slide 29-31: SHAP Output Visualization -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge shap">Step 6 · Output</div>
+    <h1 class="slide-title success-title">Step 6: Final SHAP Value Output</h1>
+    <p class="slide-subtitle">The explanation is presented as a feature importance visualization</p>
+    <div class="canvas-container" style="max-height:350px;">
+      <canvas id="shap-bars-final"></canvas>
+    </div>
+    <div class="highlight-box" style="margin-top:var(--space-md); text-align:center;">
+      <strong>Interpretation:</strong> Income (+0.163) contributes most to the 82% approval prediction
+    </div>
+  </div>
+</div>
+
+<!-- Slide 30: Force Plot -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge shap">Step 6 · Force Plot</div>
+    <h1 class="slide-title success-title">SHAP Force Plot Visualization</h1>
+    <p class="slide-subtitle">How each feature pushes the prediction from E[f(x)] = 0.50 to f(x) = 0.82</p>
+    <div class="canvas-container" style="max-height:300px;">
+      <canvas id="force-plot-final"></canvas>
+    </div>
+    <ul class="bullets" style="margin-top:var(--space-md);">
+      <li><span class="bullet-icon green">→</span> Blue bars push prediction <strong>higher</strong> (positive SHAP values)</li>
+      <li><span class="bullet-icon red">→</span> Red bars would push prediction <strong>lower</strong> (negative SHAP values)</li>
+      <li><span class="bullet-icon cyan">→</span> The cyan dot shows the final prediction f(x) = 0.82</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Slide 31: Heatmap -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge shap">Step 6 · Heatmap</div>
+    <h1 class="slide-title success-title">SHAP Heatmap: Multiple Predictions</h1>
+    <p class="slide-subtitle">Applying InstaSHAP across multiple samples</p>
+    <div class="canvas-container" style="max-height:350px;">
+      <canvas id="shap-heatmap"></canvas>
+    </div>
+    <ul class="bullets" style="margin-top:var(--space-md);">
+      <li><span class="bullet-icon green">→</span> Green cells = positive contribution, Red = negative</li>
+      <li><span class="bullet-icon cyan">→</span> Enables batch explanation at scale — a key InstaSHAP strength</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Slide 32-34: Pipeline recap -->
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content">
+    <div class="section-badge accent">📋 Recap</div>
+    <h1 class="slide-title">Full Pipeline: Complete Summary</h1>
+    <div class="canvas-container" style="max-height:200px;">
+      <canvas id="pipeline-full"></canvas>
+    </div>
+    <table class="comp-table" style="margin-top:var(--space-lg);">
+      <thead>
+        <tr><th>Step</th><th>Action</th><th>Approximation</th><th>Speed Gain</th></tr>
+      </thead>
+      <tbody>
+        <tr><td style="color:var(--clr-input);">1. Input</td><td>Prepare features</td><td>None</td><td>–</td></tr>
+        <tr><td style="color:var(--clr-input);">2. Perturb</td><td>Create masked inputs</td><td>Random masks vs all</td><td>–</td></tr>
+        <tr><td style="color:var(--clr-sampling);">3. Sample</td><td>Select k subsets</td><td class="partial">k ≪ 2ⁿ subsets</td><td class="check">99%+ reduction</td></tr>
+        <tr><td style="color:var(--clr-model);">4. Predict</td><td>Batch forward pass</td><td>None (model is exact)</td><td class="check">GPU batching</td></tr>
+        <tr><td style="color:var(--clr-shap);">5. Contrib</td><td>Average marginals</td><td class="partial">Sample average vs full</td><td class="check">O(k) vs O(2ⁿ)</td></tr>
+        <tr><td style="color:var(--clr-shap);">6. Output</td><td>Visualize SHAP vals</td><td>None</td><td>–</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content" style="text-align:center;">
+    <h1 class="slide-title" style="font-size:clamp(1.5rem,3vw,2.5rem);">End-to-End Timing</h1>
+    <div class="grid-2" style="margin-top:var(--space-xl);">
+      <div class="card glass" style="text-align:center;">
+        <h3 style="color:var(--clr-error);">Exact SHAP</h3>
+        <div class="metric-value red" style="font-size:3rem;">4.2s</div>
+        <div class="metric-label">Per prediction (10 features)</div>
+        <div class="progress-bar" style="margin-top:var(--space-md);"><div class="fill" style="--progress:100%; background:var(--clr-error);"></div></div>
+      </div>
+      <div class="card glass" style="text-align:center;">
+        <h3 style="color:var(--clr-shap);">InstaSHAP</h3>
+        <div class="metric-value green" style="font-size:3rem;">35ms</div>
+        <div class="metric-label">Per prediction (10 features)</div>
+        <div class="progress-bar" style="margin-top:var(--space-md);"><div class="fill" style="--progress:0.8%; background:var(--clr-shap);"></div></div>
+      </div>
+    </div>
+    <p style="color:var(--clr-accent); font-size:1.3rem; font-weight:700; margin-top:var(--space-xl);">120× Speed Improvement</p>
+  </div>
+</div>
+
+<div class="slide" data-section="Full Workflow">
+  <div class="slide-content" style="text-align:center;">
+    <h1 class="slide-title" style="font-size:clamp(2rem,4vw,3.5rem);">Section Complete ✓</h1>
+    <p class="slide-subtitle">We've traced ONE prediction through the entire InstaSHAP pipeline</p>
+    <p style="color:var(--clr-text-dim); font-size:1rem;">Next: Deep dive into the internal mechanism and mathematical foundations →</p>
+  </div>
+</div>
+
+<!-- ============================================================
+     SECTION 4: INTERNAL MECHANISM (Slides 36–45)
+     ============================================================ -->
+
+<div class="slide" data-section="Internal Mechanism">
+  <div class="slide-content">
+    <div class="section-badge model">🔬 Deep Tech</div>
+    <h1 class="slide-title">Internal Mechanism: Mathematical Intuition</h1>
+    <div class="grid-2" style="margin-top:var(--space-lg);">
+      <div class="flex-col">
+        <h3>Exact Shapley Formula</h3>
+        <div class="math">φᵢ(f) = Σ_{S⊆N\{i}} |S|!(n-|S|-1)!/n! · [f(S∪{i}) - f(S)]</div>
+        <p style="color:var(--clr-text-dim); font-size:0.85rem; margin-top:var(--space-sm);">
+          The weighting factor |S|!(n-|S|-1)!/n! ensures fairness — every possible ordering of features is considered equally.
+        </p>
+      </div>
+      <div class="flex-col">
+        <h3 style="color:var(--clr-shap);">InstaSHAP Monte Carlo</h3>
+        <div class="math" style="border-color:rgba(16,185,129,0.3);">φ̂ᵢ ≈ (1/k) Σⱼ₌₁ᵏ w(Sⱼ) · [f(Sⱼ∪{i}) - f(Sⱼ)]</div>
+        <p style="color:var(--clr-text-dim); font-size:0.85rem; margin-top:var(--space-sm);">
+          Monte Carlo sampling replaces the exhaustive sum with k random samples. Weights w(Sⱼ) approximate the Shapley kernel.
+        </p>
+      </div>
+    </div>
+    <div class="highlight-box" style="margin-top:var(--space-lg);">
+      <strong>Key insight:</strong> By the law of large numbers, as k → ∞, φ̂ᵢ → φᵢ. But we want k to be <em>small</em>.
+    </div>
+  </div>
+</div>
+
+<div class="slide" data-section="Internal Mechanism">
+  <div class="slide-content">
+    <div class="section-badge model">📐 Complexity</div>
+    <h1 class="slide-title">Complexity Analysis</h1>
+    <div class="canvas-container" style="max-height:380px;">
+      <canvas id="complexity-chart-2"></canvas>
+    </div>
+    <div class="grid-3" style="margin-top:var(--space-md);">
+      <div class="card glass" style="text-align:center; border-color:rgba(239,68,68,0.3);">
+        <div class="metric-value red" style="font-size:1.3rem;">O(n · 2ⁿ)</div>
+        <div class="metric-label">Exact SHAP</div>
+      </div>
+      <div class="card glass" style="text-align:center; border-color:rgba(245,158,11,0.3);">
+        <div class="metric-value orange" style="font-size:1.3rem;">O(k² · n)</div>
+        <div class="metric-label">KernelSHAP</div>
+      </div>
+      <div class="card glass" style="text-align:center; border-color:rgba(16,185,129,0.3);">
+        <div class="metric-value green" style="font-size:1.3rem;">O(k · n)</div>
+        <div class="metric-label">InstaSHAP</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" data-section="Internal Mechanism">
+  <div class="slide-content">
+    <div class="section-badge sampling">⚙️ Sampling Strategy</div>
+    <h1 class="slide-title">Sampling Strategy: Random vs Stratified</h1>
+    <div class="grid-2" style="margin-top:var(--space-lg);">
+      <div class="card glass">
+        <h3 style="color:var(--clr-sampling);">Random Uniform</h3>
+        <p style="color:var(--clr-text-dim); font-size:0.9rem;">Each subset drawn independently with equal probability. Simple but may miss important regions.</p>
+        <div class="code-block" style="margin-top:var(--space-sm);">P(S selected) = 1/2ⁿ for all S</div>
+        <div class="tag orange" style="margin-top:var(--space-sm);">Default in InstaSHAP</div>
+      </div>
+      <div class="card glass">
+        <h3 style="color:var(--clr-accent);">Stratified (Improved)</h3>
+        <p style="color:var(--clr-text-dim); font-size:0.9rem;">Ensures representation across all subset sizes |S| = 0, 1, ..., n. Better coverage.</p>
+        <div class="code-block" style="margin-top:var(--space-sm);">Sample k/n subsets of each size</div>
+        <div class="tag cyan" style="margin-top:var(--space-sm);">Potential improvement</div>
+      </div>
+    </div>
+    <ul class="bullets" style="margin-top:var(--space-lg);">
+      <li><span class="bullet-icon orange">⚠</span> Shapley values weight small and large subsets heavily — random may under-sample these</li>
+      <li><span class="bullet-icon cyan">→</span> Stratified sampling could reduce variance by 30-50% (see Phase 2 improvements)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="slide" data-section="Internal Mechanism">
+  <div class="slide-content">
+    <div class="section-badge error">⚠ Bias</div>
+    <h1 class="slide-title error-title">Where Bias Enters</h1>
+    <div class="grid-2" style="margin-top:var(--space-lg);">
+      <div class="flex-col">
+        <h3>Sources of Approximation Bias</h3>
+        <ul class="bullets">
+          <li><span class="bullet-icon red">1</span> <strong>Sampling bias:</strong> Random subsets may not cover all important coalitions</li>
+          <li><span class="bullet-icon red">2</span> <strong>Marginal perturbation bias:</strong> Replacing features with random samples assumes feature independence</li>
+          <li><span class="bullet-icon red">3</span> <strong>Finite sample error:</strong> With small k, average may not converge to true expectation</li>
+          <li><span class="bullet-icon red">4</span> <strong>Weight approximation:</strong> Shapley kernel weights are simplified</li>
+        </ul>
+      </div>
+      <div class="flex-col">
+        <h3>Bias Impact</h3>
+        <div class="feature-bar-group" style="margin-top:var(--space-md);">
+          <div class="feature-bar"><span class="bar-label">Sampling</span><div class="bar-track"><div class="bar-fill negative" style="--bar-width:65%;">High</div></div></div>
+          <div class="feature-bar"><span class="bar-label">Perturbation</span><div class="bar-track"><div class="bar-fill negative" style="--bar-width:45%;">Medium</div></div></div>
+          <div class="feature-bar"><span class="bar-label">Convergence</span><div class="bar-track"><div class="bar-fill negative" style="--bar-width:35%;">Medium</div></div></div>
+          <div class="feature-bar"><span class="bar-label">Weighting</span><div class="bar-track"><div class="bar-fill negative" style="--bar-width:25%;">Low</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- More Internal Mechanism slides -->
+<div class="slide" data-section="Internal Mechanism"><div class="slide-content">
+  <div class="section-badge model">🧮 Variance</div>
+  <h1 class="slide-title">Variance Analysis</h1>
+  <p class="slide-subtitle">InstaSHAP explanations vary between runs due to random sampling</p>
+  <div class="code-block" style="margin-top:var(--space-lg); font-size:0.85rem;">
+Var(φ̂ᵢ) = (1/k) × Var_S[f(S∪{i}) - f(S)]
+
+As k increases:
+  k = 10:  Var ≈ 0.015  (high uncertainty)
+  k = 50:  Var ≈ 0.003  (moderate)
+  k = 200: Var ≈ 0.0008 (low)
+  k = ∞:   Var = 0      (exact)</div>
+  <div class="highlight-box" style="margin-top:var(--space-lg); text-align:center;">
+    <strong>Trade-off:</strong> Higher k = lower variance = slower speed. InstaSHAP defaults to <strong style="color:var(--clr-accent);">k ≈ 50-100</strong>.
+  </div>
+</div></div>
+
+<div class="slide" data-section="Internal Mechanism"><div class="slide-content">
+  <div class="section-badge model">🎯 Convergence</div>
+  <h1 class="slide-title">When Does InstaSHAP Converge?</h1>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="card glass">
+      <h3 style="color:var(--clr-shap);">Converges well when:</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon green">✓</span> Features are mostly independent</li>
+        <li><span class="bullet-icon green">✓</span> Model is approximately additive</li>
+        <li><span class="bullet-icon green">✓</span> k is sufficiently large relative to n</li>
+        <li><span class="bullet-icon green">✓</span> Feature contributions are smooth</li>
+      </ul>
+    </div>
+    <div class="card glass">
+      <h3 style="color:var(--clr-error);">Struggles when:</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon red">✗</span> Strong feature interactions exist</li>
+        <li><span class="bullet-icon red">✗</span> Model is highly non-linear</li>
+        <li><span class="bullet-icon red">✗</span> Feature distribution is complex</li>
+        <li><span class="bullet-icon red">✗</span> k is too small for the problem</li>
+      </ul>
+    </div>
+  </div>
+</div></div>
+
+<!-- Additional Internal Mechanism slides -->
+<div class="slide" data-section="Internal Mechanism"><div class="slide-content">
+  <div class="section-badge model">🔑 Where Speed Comes From</div>
+  <h1 class="slide-title">Speed Gain Decomposition</h1>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="flex-col">
+      <h3>3 Sources of Speed</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon green">1</span> <strong>Reduced subsets:</strong> k instead of 2ⁿ (99%+ reduction)</li>
+        <li><span class="bullet-icon green">2</span> <strong>Batch processing:</strong> GPU-parallel forward passes</li>
+        <li><span class="bullet-icon green">3</span> <strong>Simplified weights:</strong> No complex combinatorial weighting</li>
+      </ul>
+    </div>
+    <div class="flex-col" style="align-items:center;">
+      <div class="card glass" style="text-align:center; width:100%;">
+        <div class="metric-value green" style="font-size:2rem;">99.99%</div>
+        <div class="metric-label">Subset reduction (n=20)</div>
+      </div>
+      <div class="card glass" style="text-align:center; width:100%; margin-top:var(--space-md);">
+        <div class="metric-value blue" style="font-size:2rem;">k×</div>
+        <div class="metric-label">Batch GPU speedup</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Internal Mechanism"><div class="slide-content">
+  <div class="section-badge model">📊 Empirical Results</div>
+  <h1 class="slide-title">Accuracy vs Number of Samples (k)</h1>
+  <div class="canvas-container" style="max-height:380px;"><canvas id="accuracy-vs-k"></canvas></div>
+  <p style="color:var(--clr-text-dim); text-align:center; margin-top:var(--space-md);">
+    With <strong style="color:var(--clr-accent);">k = 50</strong>, InstaSHAP achieves ~85% correlation with exact SHAP values
+  </p>
+</div></div>
+
+<div class="slide" data-section="Internal Mechanism"><div class="slide-content" style="text-align:center;">
+  <h1 class="slide-title" style="font-size:clamp(1.5rem,3vw,2.5rem);">Internal Mechanism: Key Takeaways</h1>
+  <div class="grid-3" style="margin-top:var(--space-xl);">
+    <div class="card glass"><h3 style="color:var(--clr-shap);">Monte Carlo</h3><p style="color:var(--clr-text-dim); font-size:0.9rem;">Replace exhaustive sum with random sampling average</p></div>
+    <div class="card glass"><h3 style="color:var(--clr-sampling);">Trade-off</h3><p style="color:var(--clr-text-dim); font-size:0.9rem;">Lower k = faster but noisier; higher k = slower but accurate</p></div>
+    <div class="card glass"><h3 style="color:var(--clr-error);">Bias</h3><p style="color:var(--clr-text-dim); font-size:0.9rem;">Feature independence assumption and sampling bias are main error sources</p></div>
+  </div>
+</div></div>
+
+<!-- ============================================================
+     SECTION 5: WHY INSTASHAP IS FAST (Slides 46–53)
+     ============================================================ -->
+
+<div class="slide" data-section="Why Fast"><div class="slide-content">
+  <div class="section-badge shap">⚡ Speed</div>
+  <h1 class="slide-title success-title">Why InstaSHAP Is Fast</h1>
+  <p class="slide-subtitle">Three key optimizations that deliver 100× speedup</p>
+  <div class="canvas-container" style="max-height:380px;"><canvas id="speed-chart-1"></canvas></div>
+</div></div>
+
+<div class="slide" data-section="Why Fast"><div class="slide-content">
+  <div class="section-badge shap">⚡ Optimization 1</div>
+  <h1 class="slide-title success-title">Reduced Sampling</h1>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="flex-col">
+      <h3>The Biggest Win</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon green">→</span> Instead of 2ⁿ subsets, evaluate only k</li>
+        <li><span class="bullet-icon green">→</span> For n=20: 1,048,576 → 50 (99.995% reduction)</li>
+        <li><span class="bullet-icon green">→</span> For n=50: 10¹⁵ → 100 (≈100% reduction)</li>
+      </ul>
+      <div class="card glass" style="margin-top:var(--space-md);">
+        <p style="color:var(--clr-shap); font-size:0.9rem;"><strong>Why it works:</strong> Random sampling provides unbiased estimates of the true Shapley values (by law of large numbers)</p>
+      </div>
+    </div>
+    <div class="flex-col" style="gap:var(--space-md);">
+      <div class="card glass" style="text-align:center;"><div class="metric-value red" style="font-size:1.8rem;">1,048,576</div><div class="metric-label">Exact SHAP subsets (n=20)</div></div>
+      <div style="text-align:center; font-size:2rem; color:var(--clr-accent);">↓</div>
+      <div class="card glass" style="text-align:center; border-color:rgba(16,185,129,0.4);"><div class="metric-value green" style="font-size:1.8rem;">50</div><div class="metric-label">InstaSHAP samples</div></div>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Why Fast"><div class="slide-content">
+  <div class="section-badge shap">⚡ Optimization 2</div>
+  <h1 class="slide-title success-title">GPU Batch Processing</h1>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="flex-col">
+      <h3>Sequential vs Batch</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon red">✗</span> Sequential: k separate model.predict() calls</li>
+        <li><span class="bullet-icon green">✓</span> Batch: 1 model.predict_batch() call with k inputs</li>
+        <li><span class="bullet-icon green">✓</span> GPU parallelism processes all k at once</li>
+        <li><span class="bullet-icon green">✓</span> Memory overhead is minimal for moderate k</li>
+      </ul>
+    </div>
+    <div class="flex-col">
+      <div class="code-block" style="font-size:0.82rem;">
+# Sequential (slow)
+for j in range(k):
+  preds[j] = model.predict(x_perturbed[j])
+# Time: k × t_forward
+
+# Batch (fast)
+preds = model.predict(
+  np.stack(x_perturbed[:k])
+)
+# Time: ~1 × t_forward (GPU parallel)</div>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Why Fast"><div class="slide-content">
+  <div class="section-badge shap">⚡ Optimization 3</div>
+  <h1 class="slide-title success-title">Simplified Weight Computation</h1>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="card glass">
+      <h3 style="color:var(--clr-error);">Exact SHAP Weights</h3>
+      <div class="math">w(S) = |S|!(n-|S|-1)!/n!</div>
+      <p style="color:var(--clr-text-dim); font-size:0.85rem; margin-top:var(--space-sm);">Requires computing factorials → overflow for large n</p>
+    </div>
+    <div class="card glass">
+      <h3 style="color:var(--clr-shap);">InstaSHAP Weights</h3>
+      <div class="math" style="border-color:rgba(16,185,129,0.3);">w(Sⱼ) = 1/k (uniform)</div>
+      <p style="color:var(--clr-text-dim); font-size:0.85rem; margin-top:var(--space-sm);">Simple average — no combinatorial computation needed</p>
+    </div>
+  </div>
+  <div class="highlight-box" style="margin-top:var(--space-lg); text-align:center;">
+    <strong>Trade-off:</strong> Equal weighting introduces bias but eliminates factorial computation entirely
+  </div>
+</div></div>
+
+<div class="slide" data-section="Why Fast"><div class="slide-content">
+  <div class="section-badge shap">⚡ Speed Trade-off</div>
+  <h1 class="slide-title success-title">Accuracy vs Speed Trade-off Curve</h1>
+  <div class="canvas-container" style="max-height:380px;"><canvas id="tradeoff-chart-2"></canvas></div>
+  <p style="color:var(--clr-text-dim); text-align:center; margin-top:var(--space-md);">
+    InstaSHAP sits in the <strong style="color:var(--clr-shap);">high-speed, good-enough-accuracy</strong> zone
+  </p>
+</div></div>
+
+<div class="slide" data-section="Why Fast"><div class="slide-content">
+  <div class="section-badge shap">📊 Benchmark</div>
+  <h1 class="slide-title success-title">Real-World Benchmark Results</h1>
+  <table class="comp-table" style="margin-top:var(--space-lg);">
+    <thead><tr><th>Model</th><th>Features</th><th>Exact SHAP</th><th>KernelSHAP</th><th style="color:var(--clr-shap);">InstaSHAP</th><th>Speedup</th></tr></thead>
+    <tbody>
+      <tr><td>XGBoost</td><td>10</td><td>4.2s</td><td>0.85s</td><td class="check">35ms</td><td class="check">120×</td></tr>
+      <tr><td>Random Forest</td><td>20</td><td>~3 min</td><td>5.2s</td><td class="check">80ms</td><td class="check">2250×</td></tr>
+      <tr><td>MLP (3 layers)</td><td>50</td><td>Infeasible</td><td>45s</td><td class="check">200ms</td><td class="check">225×</td></tr>
+      <tr><td>CNN (image)</td><td>784</td><td>Infeasible</td><td>Infeasible</td><td class="check">1.2s</td><td class="check">∞</td></tr>
+    </tbody>
+  </table>
+</div></div>
+
+<div class="slide" data-section="Why Fast"><div class="slide-content" style="text-align:center;">
+  <div class="section-badge shap">⚡ Summary</div>
+  <h1 class="slide-title success-title">Speed Summary</h1>
+  <div class="grid-3" style="margin-top:var(--space-xl);">
+    <div class="card glass anim-glow"><div class="metric-value green" style="font-size:2.5rem;">120×</div><div class="metric-label">Average Speedup</div></div>
+    <div class="card glass anim-glow"><div class="metric-value blue" style="font-size:2.5rem;">35ms</div><div class="metric-label">Per Explanation</div></div>
+    <div class="card glass anim-glow"><div class="metric-value purple" style="font-size:2.5rem;">~85%</div><div class="metric-label">Accuracy Retained</div></div>
+  </div>
+  <p style="color:var(--clr-text-dim); font-size:1rem; margin-top:var(--space-xl);">
+    But speed comes at a cost — let's examine where InstaSHAP <strong style="color:var(--clr-error);">FAILS</strong> →
+  </p>
+</div></div>
+
+<!-- ============================================================
+     SECTION 6: FAILURE ANALYSIS (Slides 54–73) — 20 SLIDES
+     ============================================================ -->
+
+<div class="slide" data-section="Failure Analysis"><div class="slide-content" style="text-align:center;">
+  <div class="section-badge error">❌ Failures</div>
+  <h1 class="slide-title error-title" style="font-size:clamp(2rem,4vw,3.5rem);">Failure Analysis</h1>
+  <p class="slide-subtitle" style="font-size:1.3rem;">Where InstaSHAP Breaks Down — and WHY</p>
+  <div class="grid-4" style="margin-top:var(--space-xl);">
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);"><h3 style="color:var(--clr-error);">Interactions</h3><p style="color:var(--clr-text-dim); font-size:0.8rem;">High feature correlation</p></div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);"><h3 style="color:var(--clr-error);">Non-linear</h3><p style="color:var(--clr-text-dim); font-size:0.8rem;">Complex decision boundaries</p></div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);"><h3 style="color:var(--clr-error);">LLM/Transformers</h3><p style="color:var(--clr-text-dim); font-size:0.8rem;">Sequential dependencies</p></div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);"><h3 style="color:var(--clr-error);">Dist. Shift</h3><p style="color:var(--clr-text-dim); font-size:0.8rem;">Training ≠ inference</p></div>
+  </div>
+</div></div>
+
+<!-- Failure 1: Feature Interactions (5 slides) -->
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">Failure 1 · Interactions</div>
+  <h1 class="slide-title error-title">Feature Interaction Failure</h1>
+  <p class="slide-subtitle">When features work TOGETHER, individual contributions are misleading</p>
+  <div class="canvas-container" style="max-height:350px;"><canvas id="interaction-viz-1"></canvas></div>
+  <div class="highlight-box" style="margin-top:var(--space-md); text-align:center; border-color:rgba(239,68,68,0.5);">
+    <strong style="color:var(--clr-error);">Root Cause:</strong> InstaSHAP assumes features contribute independently — interaction terms are NOT captured
+  </div>
+</div></div>
+
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">Failure 1 · Example</div>
+  <h1 class="slide-title error-title">Interaction Example: XOR Problem</h1>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="flex-col">
+      <h3>The XOR Function</h3>
+      <div class="code-block">f(X₁, X₂) = X₁ XOR X₂
+
+X₁=0, X₂=0 → f=0
+X₁=0, X₂=1 → f=1
+X₁=1, X₂=0 → f=1
+X₁=1, X₂=1 → f=0
+
+Individual features have ZERO marginal effect!
+But together they determine everything.</div>
+    </div>
+    <div class="flex-col">
+      <h3>InstaSHAP says:</h3>
+      <div class="feature-bar-group">
+        <div class="feature-bar"><span class="bar-label">X₁</span><div class="bar-track"><div class="bar-fill negative" style="--bar-width:5%;">≈0</div></div></div>
+        <div class="feature-bar"><span class="bar-label">X₂</span><div class="bar-track"><div class="bar-fill negative" style="--bar-width:5%;">≈0</div></div></div>
+      </div>
+      <h3 style="color:var(--clr-error); margin-top:var(--space-lg);">Reality:</h3>
+      <p style="color:var(--clr-error);">Both features are CRITICAL — they jointly determine the output. InstaSHAP assigns ≈0 to both!</p>
+      <div class="tag red" style="margin-top:var(--space-sm);">Completely misleading</div>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">Failure 1 · Why</div>
+  <h1 class="slide-title error-title">WHY Interactions Break InstaSHAP</h1>
+  <ul class="bullets" style="margin-top:var(--space-lg);">
+    <li><span class="bullet-icon red">1</span> <strong>Marginal contribution assumes additivity:</strong> φᵢ measures how i alone changes the output</li>
+    <li><span class="bullet-icon red">2</span> <strong>XOR/interaction effects are non-additive:</strong> f(S∪{i,j}) ≠ f(S∪{i}) + f(S∪{j}) - f(S)</li>
+    <li><span class="bullet-icon red">3</span> <strong>Random sampling misses critical pairs:</strong> With k ≪ 2ⁿ, joint coalitions may never be sampled</li>
+    <li><span class="bullet-icon red">4</span> <strong>No interaction terms in output:</strong> Standard SHAP values are per-feature, not per-pair</li>
+  </ul>
+  <div class="card glass" style="margin-top:var(--space-lg); border-color:rgba(239,68,68,0.3);">
+    <h3 style="color:var(--clr-error);">Impact</h3>
+    <p style="color:var(--clr-text-dim);">Any model with significant feature interactions (neural networks, polynomial features, attention mechanisms) will produce misleading InstaSHAP explanations.</p>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">Failure 1 · Comparison</div>
+  <h1 class="slide-title error-title">Expected vs InstaSHAP: Interaction Case</h1>
+  <div class="canvas-container" style="max-height:380px;"><canvas id="comparison-interaction"></canvas></div>
+</div></div>
+
+<!-- Failure 2: Non-linear Models (4 slides) -->
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">Failure 2 · Non-linear</div>
+  <h1 class="slide-title error-title">Non-linear Model Failure</h1>
+  <p class="slide-subtitle">Complex decision boundaries create unreliable explanations</p>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="card glass">
+      <h3 style="color:var(--clr-shap);">Linear model</h3>
+      <p style="color:var(--clr-text-dim);">f(x) = w₁x₁ + w₂x₂ + b</p>
+      <p style="color:var(--clr-shap); font-size:0.9rem; margin-top:var(--space-sm);">✓ InstaSHAP works perfectly — marginal contributions are constant</p>
+    </div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);">
+      <h3 style="color:var(--clr-error);">Deep Neural Network</h3>
+      <p style="color:var(--clr-text-dim);">f(x) = σ(W₃·σ(W₂·σ(W₁·x+b₁)+b₂)+b₃)</p>
+      <p style="color:var(--clr-error); font-size:0.9rem; margin-top:var(--space-sm);">✗ Marginal contributions depend on WHERE in feature space you are — highly non-stable</p>
+    </div>
+  </div>
+  <div class="highlight-box" style="margin-top:var(--space-lg); text-align:center; border-color:rgba(239,68,68,0.5);">
+    <strong style="color:var(--clr-error);">Root Cause:</strong> In non-linear models, f(S∪{i}) - f(S) varies wildly depending on S — a few samples can't capture this
+  </div>
+</div></div>
+
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">Failure 2 · Deep Nets</div>
+  <h1 class="slide-title error-title">Deep Network: Activation Landscapes</h1>
+  <div class="canvas-container" style="max-height:300px;"><canvas id="nn-nonlinear"></canvas></div>
+  <ul class="bullets" style="margin-top:var(--space-md);">
+    <li><span class="bullet-icon red">1</span> ReLU activations create sharp decision boundaries</li>
+    <li><span class="bullet-icon red">2</span> Feature importance is position-dependent in input space</li>
+    <li><span class="bullet-icon red">3</span> Random perturbation may push inputs to different activation regions</li>
+    <li><span class="bullet-icon red">4</span> Average marginal contribution becomes meaningless across regions</li>
+  </ul>
+</div></div>
+
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">Failure 2 · Evidence</div>
+  <h1 class="slide-title error-title">Non-linear: Expected vs Actual</h1>
+  <div class="canvas-container" style="max-height:380px;"><canvas id="comparison-nonlinear"></canvas></div>
+  <p style="color:var(--clr-error); text-align:center; margin-top:var(--space-md);">
+    ⚠ For features near decision boundaries, InstaSHAP error can exceed 40%
+  </p>
+</div></div>
+
+<!-- Failure 3: LLM/Transformers (4 slides) -->
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">Failure 3 · LLMs</div>
+  <h1 class="slide-title error-title">LLM / Transformer Failure</h1>
+  <p class="slide-subtitle">Language models have sequential dependencies that break feature independence</p>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="flex-col">
+      <h3>Why LLMs are problematic</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon red">1</span> <strong>Token order matters:</strong> "not good" ≠ "good not"</li>
+        <li><span class="bullet-icon red">2</span> <strong>Attention is global:</strong> Every token attends to every other</li>
+        <li><span class="bullet-icon red">3</span> <strong>Masking tokens creates invalid inputs:</strong> "The [MASK] is happy" is out-of-distribution</li>
+        <li><span class="bullet-icon red">4</span> <strong>Features ≠ tokens:</strong> Meaning spans token boundaries</li>
+      </ul>
+    </div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);">
+      <h3 style="color:var(--clr-error);">Example</h3>
+      <div class="code-block" style="font-size:0.8rem;">
+Input: "The movie was not good"
+Sentiment: Negative (0.2)
+
+InstaSHAP masking:
+  Mask "not": "The movie was good"
+  → Sentiment: Positive (0.85)
+  → φ("not") = 0.2 - 0.85 = -0.65 ✓
+
+  Mask "good": "The movie was not"
+  → INVALID INPUT (incomplete)
+  → Model output: random
+  → φ("good") = UNRELIABLE ✗</div>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">Failure 3 · Attention</div>
+  <h1 class="slide-title error-title">Attention Mechanism: Why Masking Fails</h1>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="card glass">
+      <h3>Self-Attention computes:</h3>
+      <div class="math" style="font-size:0.9rem;">Attention(Q,K,V) = softmax(QK^T/√d) · V</div>
+      <p style="color:var(--clr-text-dim); font-size:0.85rem; margin-top:var(--space-sm);">
+        Every token sees every other token. Masking one changes ALL attention scores.
+      </p>
+    </div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);">
+      <h3 style="color:var(--clr-error);">Impact on InstaSHAP</h3>
+      <p style="color:var(--clr-text-dim); font-size:0.85rem;">
+        Removing token i changes how ALL other tokens interact — the "marginal contribution" of i is entangled with global context. InstaSHAP cannot decompose this.
+      </p>
+    </div>
+  </div>
+  <div class="highlight-box" style="margin-top:var(--space-lg); text-align:center; border-color:rgba(239,68,68,0.5);">
+    <strong style="color:var(--clr-error);">Verdict:</strong> InstaSHAP is fundamentally ill-suited for transformer-based models due to global attention interdependencies
+  </div>
+</div></div>
+
+<!-- Failure 4: Distribution Shift (4 slides) -->
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">Failure 4 · Dist. Shift</div>
+  <h1 class="slide-title error-title">Distribution Shift Failure</h1>
+  <p class="slide-subtitle">When inference data differs from training data, perturbation baselines become invalid</p>
+  <div class="canvas-container" style="max-height:350px;"><canvas id="dist-shift-viz"></canvas></div>
+</div></div>
+
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">Failure 4 · Mechanism</div>
+  <h1 class="slide-title error-title">How Distribution Shift Breaks InstaSHAP</h1>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="flex-col">
+      <h3>The Problem</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon red">1</span> InstaSHAP replaces masked features with <strong>training data samples</strong></li>
+        <li><span class="bullet-icon red">2</span> If inference data has shifted, training baselines are wrong</li>
+        <li><span class="bullet-icon red">3</span> Perturbed inputs fall in regions the model wasn't trained on</li>
+        <li><span class="bullet-icon red">4</span> Model predictions on perturbed inputs are unreliable</li>
+      </ul>
+    </div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);">
+      <h3 style="color:var(--clr-error);">Example</h3>
+      <div class="code-block" style="font-size:0.8rem;">
+Training: Income mean = $50K
+Inference: Income mean = $150K (new market)
+
+InstaSHAP masks Income → replaces with
+training sample ($50K)
+→ Model sees ($150K → $50K) = huge drop
+→ Overestimates Income importance
+→ WRONG explanation!</div>
+    </div>
+  </div>
+</div></div>
+
+<!-- Failure summary slides -->
+<div class="slide" data-section="Failure Analysis"><div class="slide-content">
+  <div class="section-badge error">❌ Failure Severity</div>
+  <h1 class="slide-title error-title">Failure Severity Matrix</h1>
+  <table class="comp-table" style="margin-top:var(--space-lg);">
+    <thead><tr><th>Failure Type</th><th>Severity</th><th>Frequency</th><th>Detectability</th></tr></thead>
+    <tbody>
+      <tr><td>Feature Interactions</td><td class="cross">🔴 Critical</td><td class="cross">Very Common</td><td class="partial">Hard to detect</td></tr>
+      <tr><td>Non-linear Models</td><td class="partial">🟡 High</td><td class="partial">Common</td><td class="partial">Moderate</td></tr>
+      <tr><td>LLM/Transformers</td><td class="cross">🔴 Critical</td><td class="cross">Always</td><td class="check">Easy to detect</td></tr>
+      <tr><td>Distribution Shift</td><td class="cross">🔴 Critical</td><td class="partial">Context-dependent</td><td class="cross">Very hard</td></tr>
+    </tbody>
+  </table>
+</div></div>
+
+<div class="slide" data-section="Failure Analysis"><div class="slide-content" style="text-align:center;">
+  <div class="section-badge error">❌ Key Insight</div>
+  <h1 class="slide-title error-title">The Fundamental Trade-off</h1>
+  <p class="slide-subtitle" style="max-width:700px; margin:0 auto;">
+    InstaSHAP sacrifices <strong style="color:var(--clr-error);">exactness</strong> for <strong style="color:var(--clr-shap);">speed</strong>.
+    In benign cases, this works well. In adversarial cases, the explanations can be
+    <strong style="color:var(--clr-error);">completely wrong</strong>.
+  </p>
+  <div class="grid-2" style="margin-top:var(--space-xl);">
+    <div class="card glass" style="border-color:rgba(16,185,129,0.3);"><h3 style="color:var(--clr-shap);">InstaSHAP Works When:</h3>
+      <ul class="bullets"><li><span class="bullet-icon green">✓</span> Features are ~independent</li><li><span class="bullet-icon green">✓</span> Model is ~additive</li><li><span class="bullet-icon green">✓</span> Distribution is stable</li></ul>
+    </div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);"><h3 style="color:var(--clr-error);">InstaSHAP Fails When:</h3>
+      <ul class="bullets"><li><span class="bullet-icon red">✗</span> Strong feature interactions</li><li><span class="bullet-icon red">✗</span> Highly non-linear models</li><li><span class="bullet-icon red">✗</span> Distribution shift present</li></ul>
+    </div>
+  </div>
+</div></div>
+
+<!-- ============================================================
+     SECTION 7: LIMITATIONS (Slides 74–83)
+     ============================================================ -->
+
+<div class="slide" data-section="Limitations"><div class="slide-content">
+  <div class="section-badge error">⚠️ Limitations</div>
+  <h1 class="slide-title error-title">InstaSHAP Limitations Overview</h1>
+  <div class="grid-2" style="margin-top:var(--space-xl);">
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);">
+      <h3 style="color:var(--clr-error);">1. Loss of Exactness</h3>
+      <p style="color:var(--clr-text-dim); font-size:0.9rem;">Monte Carlo approximation means values change between runs. No guarantees on error bounds.</p>
+      <div class="progress-bar" style="margin-top:var(--space-sm);"><div class="fill" style="--progress:80%; background:var(--clr-error);"></div></div>
+    </div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);">
+      <h3 style="color:var(--clr-error);">2. Approximation Bias</h3>
+      <p style="color:var(--clr-text-dim); font-size:0.9rem;">Systematic underestimation of interaction effects and correlated feature groups.</p>
+      <div class="progress-bar" style="margin-top:var(--space-sm);"><div class="fill" style="--progress:70%; background:var(--clr-error);"></div></div>
+    </div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);">
+      <h3 style="color:var(--clr-error);">3. Scalability Limits</h3>
+      <p style="color:var(--clr-text-dim); font-size:0.9rem;">For very large n, even k·n model calls become expensive. Vision models with 10K+ features still struggle.</p>
+      <div class="progress-bar" style="margin-top:var(--space-sm);"><div class="fill" style="--progress:55%; background:var(--clr-error);"></div></div>
+    </div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);">
+      <h3 style="color:var(--clr-error);">4. Not Universal</h3>
+      <p style="color:var(--clr-text-dim); font-size:0.9rem;">Cannot handle sequential models, RL agents, or models with non-tabular inputs natively.</p>
+      <div class="progress-bar" style="margin-top:var(--space-sm);"><div class="fill" style="--progress:90%; background:var(--clr-error);"></div></div>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Limitations"><div class="slide-content">
+  <div class="section-badge error">⚠️ Non-Universality</div>
+  <h1 class="slide-title error-title">Not All Models Are Equal</h1>
+  <p class="slide-subtitle">InstaSHAP's effectiveness varies drastically across model architectures</p>
+  <div class="grid-4" style="margin-top:var(--space-lg);">
+    <div class="card glass" style="text-align:center;"><div class="traffic-light" style="justify-content:center;"><div class="traffic-dot green"></div></div><h3 style="margin-top:var(--space-sm);">Linear / GLM</h3><p style="color:var(--clr-text-dim); font-size:0.8rem;">Works perfectly</p></div>
+    <div class="card glass" style="text-align:center;"><div class="traffic-light" style="justify-content:center;"><div class="traffic-dot green"></div></div><h3 style="margin-top:var(--space-sm);">Tree Models</h3><p style="color:var(--clr-text-dim); font-size:0.8rem;">Works well</p></div>
+    <div class="card glass" style="text-align:center;"><div class="traffic-light" style="justify-content:center;"><div class="traffic-dot yellow"></div></div><h3 style="margin-top:var(--space-sm);">Deep Networks</h3><p style="color:var(--clr-text-dim); font-size:0.8rem;">Partial / risky</p></div>
+    <div class="card glass" style="text-align:center;"><div class="traffic-light" style="justify-content:center;"><div class="traffic-dot red"></div></div><h3 style="margin-top:var(--space-sm);">LLMs</h3><p style="color:var(--clr-text-dim); font-size:0.8rem;">Fails</p></div>
+  </div>
+</div></div>
+
+<!-- Additional limitation slides -->
+<div class="slide" data-section="Limitations"><div class="slide-content">
+  <div class="section-badge error">⚠️ Exactness Loss</div>
+  <h1 class="slide-title error-title">Quantifying Exactness Loss</h1>
+  <div class="code-block" style="margin-top:var(--space-lg);">
+Error metrics across 1000 test instances:
+
+                  MAE      RMSE     Correlation
+k = 10:          0.082    0.115    0.72
+k = 50:          0.034    0.048    0.89
+k = 100:         0.019    0.027    0.94
+k = 500:         0.006    0.009    0.98
+Exact:           0.000    0.000    1.00
+
+Note: These assume NO feature interactions.
+With interactions, errors can be 3-5× higher.</div>
+</div></div>
+
+<div class="slide" data-section="Limitations"><div class="slide-content">
+  <div class="section-badge error">⚠️ Broken Pipeline</div>
+  <h1 class="slide-title error-title">When the Pipeline Breaks</h1>
+  <div class="pipeline" style="margin-top:var(--space-xl);">
+    <div class="pipeline-step input"><span class="step-num">Step 1</span><span class="step-label">Input ✓</span></div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step input"><span class="step-num">Step 2</span><span class="step-label">Perturb ✓</span></div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step error"><span class="step-num">Step 3</span><span class="step-label">Sample ⚠</span></div>
+    <span class="pipeline-arrow" style="color:var(--clr-error);">→</span>
+    <div class="pipeline-step error"><span class="step-num">Step 4</span><span class="step-label">Predict ⚠</span></div>
+    <span class="pipeline-arrow" style="color:var(--clr-error);">→</span>
+    <div class="pipeline-step error"><span class="step-num">Step 5</span><span class="step-label">Contrib ✗</span></div>
+  </div>
+  <div class="broken-line" style="margin-top:var(--space-lg);"></div>
+  <ul class="bullets" style="margin-top:var(--space-lg);">
+    <li><span class="bullet-icon orange">⚠</span> <strong>Step 3:</strong> Poor sampling → missing important coalitions</li>
+    <li><span class="bullet-icon orange">⚠</span> <strong>Step 4:</strong> Out-of-distribution perturbations → unreliable predictions</li>
+    <li><span class="bullet-icon red">✗</span> <strong>Step 5:</strong> Averaging unreliable marginals → wrong SHAP values</li>
+  </ul>
+</div></div>
+
+<!-- More limitation slides to fill section -->
+<div class="slide" data-section="Limitations"><div class="slide-content" style="text-align:center;">
+  <div class="section-badge error">⚠️ Summary</div>
+  <h1 class="slide-title error-title">Limitations: Key Takeaways</h1>
+  <div class="grid-3" style="margin-top:var(--space-xl);">
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);"><h3 style="color:var(--clr-error);">Exactness</h3><p style="color:var(--clr-text-dim); font-size:0.85rem;">Explanations are approximate and non-deterministic</p></div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);"><h3 style="color:var(--clr-error);">Bias</h3><p style="color:var(--clr-text-dim); font-size:0.85rem;">Systematic underestimation of interactions and non-linear effects</p></div>
+    <div class="card glass" style="border-color:rgba(239,68,68,0.3);"><h3 style="color:var(--clr-error);">Scope</h3><p style="color:var(--clr-text-dim); font-size:0.85rem;">Not suitable for LLMs, RL agents, or complex vision models</p></div>
+  </div>
+  <p style="color:var(--clr-accent); margin-top:var(--space-xl);">These limitations motivate the need for InstaSHAP 2.0 →</p>
+</div></div>
+
+<!-- ============================================================
+     SECTION 8: APPLICABILITY (Slides 84–91)
+     ============================================================ -->
+
+<div class="slide" data-section="Applicability"><div class="slide-content">
+  <div class="section-badge accent">🔬 Applicability</div>
+  <h1 class="slide-title">Can InstaSHAP Be Used For All Models?</h1>
+  <p class="slide-subtitle">A systematic analysis of InstaSHAP's compatibility across AI model types</p>
+  <table class="comp-table" style="margin-top:var(--space-lg);">
+    <thead><tr><th>Model Type</th><th>Applicability</th><th>Quality</th><th>Reasoning</th></tr></thead>
+    <tbody>
+      <tr><td>Linear / Logistic Reg.</td><td class="check">✓ Full</td><td class="check">Excellent</td><td>Additive model — SHAP values are exact even with approximation</td></tr>
+      <tr><td>Decision Trees / RF</td><td class="check">✓ Full</td><td class="check">Good</td><td>Low interactions, well-behaved feature spaces</td></tr>
+      <tr><td>XGBoost / LightGBM</td><td class="check">✓ Full</td><td class="partial">Good-Fair</td><td>Moderate interactions may be underestimated</td></tr>
+      <tr><td>MLP / Feedforward NN</td><td class="partial">⚠ Partial</td><td class="partial">Fair</td><td>Non-linearity and internal interactions reduce accuracy</td></tr>
+      <tr><td>CNN (Vision)</td><td class="partial">⚠ Limited</td><td class="cross">Poor</td><td>Spatial dependencies, high dimensionality</td></tr>
+      <tr><td>RNN / LSTM</td><td class="cross">✗ Weak</td><td class="cross">Poor</td><td>Sequential dependencies violate independence assumption</td></tr>
+      <tr><td>Transformers / LLMs</td><td class="cross">✗ Unsuitable</td><td class="cross">Very Poor</td><td>Global attention, token interdependencies</td></tr>
+      <tr><td>RL Agents</td><td class="cross">✗ N/A</td><td class="cross">N/A</td><td>Action-state chains are not decomposable into features</td></tr>
+    </tbody>
+  </table>
+</div></div>
+
+<div class="slide" data-section="Applicability"><div class="slide-content">
+  <div class="section-badge shap">✓ ML Models</div>
+  <h1 class="slide-title success-title">ML Models: InstaSHAP's Sweet Spot</h1>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="flex-col">
+      <h3>Why ML Models Work Well</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon green">1</span> Tabular data with clear feature boundaries</li>
+        <li><span class="bullet-icon green">2</span> Usually ≤100 features — k doesn't need to be huge</li>
+        <li><span class="bullet-icon green">3</span> Tree-based models have bounded interactions</li>
+        <li><span class="bullet-icon green">4</span> Feature distributions are well-understood</li>
+        <li><span class="bullet-icon green">5</span> Fast inference — batch processing is efficient</li>
+      </ul>
+    </div>
+    <div class="card glass" style="border-color:rgba(16,185,129,0.3);">
+      <h3 style="color:var(--clr-shap);">Recommended Settings</h3>
+      <div class="code-block" style="font-size:0.82rem;">
+For ML models:
+  k = 50          # samples
+  perturbation = "marginal"
+  
+Expected quality:
+  Correlation: 0.85-0.95
+  MAE: 0.02-0.05
+  Speed: 20-100ms</div>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Applicability"><div class="slide-content">
+  <div class="section-badge sampling">⚠ Deep Learning</div>
+  <h1 class="slide-title">Deep Learning: Partial Applicability</h1>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="card glass" style="border-color:rgba(245,158,11,0.3);">
+      <h3 style="color:var(--clr-sampling);">Challenges</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon orange">⚠</span> Internal feature interactions in hidden layers</li>
+        <li><span class="bullet-icon orange">⚠</span> Non-linear activation functions</li>
+        <li><span class="bullet-icon orange">⚠</span> Perturbation may create adversarial-like inputs</li>
+      </ul>
+    </div>
+    <div class="card glass" style="border-color:rgba(16,185,129,0.3);">
+      <h3 style="color:var(--clr-shap);">Mitigations</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon green">→</span> Increase k to 200+</li>
+        <li><span class="bullet-icon green">→</span> Use conditional perturbation</li>
+        <li><span class="bullet-icon green">→</span> Validate against gradient-based methods</li>
+      </ul>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Applicability"><div class="slide-content">
+  <div class="section-badge error">✗ LLMs</div>
+  <h1 class="slide-title error-title">LLMs: Why InstaSHAP Cannot Work</h1>
+  <ul class="bullets" style="margin-top:var(--space-lg);">
+    <li><span class="bullet-icon red">1</span> <strong>Token granularity mismatch:</strong> SHAP operates on features, but meaning in LLMs spans multiple tokens</li>
+    <li><span class="bullet-icon red">2</span> <strong>Context dependency:</strong> Every token's meaning depends on ALL surrounding tokens</li>
+    <li><span class="bullet-icon red">3</span> <strong>Invalid perturbations:</strong> Random token masking creates nonsensical inputs</li>
+    <li><span class="bullet-icon red">4</span> <strong>Combinatorial explosion:</strong> LLMs have 100K+ vocabulary, making even sampling infeasible</li>
+    <li><span class="bullet-icon red">5</span> <strong>Alternative needed:</strong> Attention visualization, integrated gradients, or specialized LLM explainability frameworks</li>
+  </ul>
+  <div class="highlight-box" style="margin-top:var(--space-lg); text-align:center; border-color:rgba(239,68,68,0.5);">
+    <strong style="color:var(--clr-error);">Verdict:</strong> Do NOT use InstaSHAP for LLMs — use attention maps, LIME for text, or specialized tools
+  </div>
+</div></div>
+
+<!-- ============================================================
+     SECTION 9: INTERACTIVE SIMULATION (Slides 92–101)
+     ============================================================ -->
+
+<div class="slide" data-section="Interactive Sim"><div class="slide-content" style="text-align:center;">
+  <div class="section-badge accent">🎮 Interactive</div>
+  <h1 class="slide-title" style="font-size:clamp(2rem,4vw,3.5rem);">Interactive Simulation</h1>
+  <p class="slide-subtitle">Explore InstaSHAP in real-time — change inputs and see how explanations change</p>
+</div></div>
+
+<div class="slide" data-section="Interactive Sim"><div class="slide-content">
+  <div class="section-badge accent">🎮 Simulator</div>
+  <h1 class="slide-title">What-If Feature Simulator</h1>
+  <p class="slide-subtitle">Adjust feature values and watch SHAP explanations update</p>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="sim-panel">
+      <h3>Adjust Input Features</h3>
+      <div class="sim-slider-group">
+        <label>Age: <span id="sim-age-val" style="color:var(--clr-accent);">35</span></label>
+        <input type="range" id="sim-age" min="18" max="70" value="35" oninput="updateSimulation()">
+      </div>
+      <div class="sim-slider-group">
+        <label>Income ($K): <span id="sim-income-val" style="color:var(--clr-accent);">75</span></label>
+        <input type="range" id="sim-income" min="20" max="200" value="75" oninput="updateSimulation()">
+      </div>
+      <div class="sim-slider-group">
+        <label>Credit Score: <span id="sim-score-val" style="color:var(--clr-accent);">0.80</span></label>
+        <input type="range" id="sim-score" min="0" max="100" value="80" oninput="updateSimulation()">
+      </div>
+      <div style="margin-top:var(--space-md); text-align:center;">
+        <div class="metric-value blue" style="font-size:1.5rem;" id="sim-prediction">f(x) = 0.82</div>
+        <div class="metric-label">Model Prediction</div>
+      </div>
+    </div>
+    <div class="flex-col">
+      <h3>InstaSHAP Explanation</h3>
+      <div class="feature-bar-group" id="sim-bars">
+        <div class="feature-bar"><span class="bar-label">Income</span><div class="bar-track"><div class="bar-fill positive" id="sim-bar-income" style="--bar-width:75%;">+0.163</div></div></div>
+        <div class="feature-bar"><span class="bar-label">Score</span><div class="bar-track"><div class="bar-fill positive" id="sim-bar-score" style="--bar-width:50%;">+0.107</div></div></div>
+        <div class="feature-bar"><span class="bar-label">Age</span><div class="bar-track"><div class="bar-fill positive" id="sim-bar-age" style="--bar-width:27%;">+0.057</div></div></div>
+      </div>
+      <div class="card glass" style="margin-top:var(--space-lg);">
+        <p id="sim-explanation" style="color:var(--clr-text-dim); font-size:0.9rem;">
+          💡 High income (+0.163) is the primary driver of approval. Try lowering it to see the change.
+        </p>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Interactive Sim"><div class="slide-content">
+  <div class="section-badge accent">🎮 Sampling k</div>
+  <h1 class="slide-title">Impact of Sample Size (k)</h1>
+  <p class="slide-subtitle">See how increasing k affects explanation quality</p>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="sim-panel">
+      <h3>Adjust k (number of samples)</h3>
+      <div class="sim-slider-group">
+        <label>k = <span id="sim-k-val" style="color:var(--clr-accent); font-weight:700;">50</span></label>
+        <input type="range" id="sim-k" min="5" max="500" value="50" step="5" oninput="updateKSimulation()">
+      </div>
+      <div style="margin-top:var(--space-lg);">
+        <div class="feature-bar"><span class="bar-label">Speed</span><div class="bar-track"><div class="bar-fill positive" id="sim-speed-bar" style="--bar-width:90%;">35ms</div></div></div>
+        <div class="feature-bar" style="margin-top:var(--space-sm);"><span class="bar-label">Accuracy</span><div class="bar-track"><div class="bar-fill positive" id="sim-acc-bar" style="--bar-width:85%;">85%</div></div></div>
+        <div class="feature-bar" style="margin-top:var(--space-sm);"><span class="bar-label">Variance</span><div class="bar-track"><div class="bar-fill negative" id="sim-var-bar" style="--bar-width:35%;">Moderate</div></div></div>
+      </div>
+    </div>
+    <div class="card glass">
+      <h3>Interpretation</h3>
+      <p id="sim-k-explanation" style="color:var(--clr-text-dim); font-size:0.9rem;">
+        With k=50, InstaSHAP achieves ~85% correlation with exact SHAP values in ~35ms. Increasing k improves accuracy but slows computation.
+      </p>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Interactive Sim"><div class="slide-content" style="text-align:center;">
+  <div class="section-badge accent">🎮 Complete Pipeline Trace</div>
+  <h1 class="slide-title">Complete Prediction Trace</h1>
+  <p class="slide-subtitle">The full journey of one prediction through InstaSHAP</p>
+  <div class="canvas-container" style="max-height:200px;"><canvas id="pipeline-interactive"></canvas></div>
+  <div class="grid-3" style="margin-top:var(--space-lg);">
+    <div class="card glass" style="text-align:center;"><h3 style="color:var(--clr-input);">Input</h3><p style="color:var(--clr-text-dim); font-size:0.85rem;">[35, $75K, 0.80]</p></div>
+    <div class="card glass" style="text-align:center;"><h3 style="color:var(--clr-model);">Prediction</h3><p style="color:var(--clr-text-dim); font-size:0.85rem;">f(x) = 0.82</p></div>
+    <div class="card glass" style="text-align:center;"><h3 style="color:var(--clr-shap);">Explanation</h3><p style="color:var(--clr-text-dim); font-size:0.85rem;">Income: +0.163</p></div>
+  </div>
+</div></div>
+
+<!-- ============================================================
+     SECTION 10: IMPROVEMENTS / PHASE 2 (Slides 102–141) — 40 SLIDES
+     ============================================================ -->
+
+<div class="slide" data-section="Improvements v2"><div class="slide-content" style="text-align:center;">
+  <div class="section-badge shap">🚀 Phase 2</div>
+  <h1 class="slide-title success-title" style="font-size:clamp(2rem,5vw,4rem);">InstaSHAP 2.0</h1>
+  <p class="slide-subtitle" style="font-size:1.3rem;">Proposed Improvements Based on Identified Limitations</p>
+  <div class="grid-4" style="margin-top:var(--space-xl);">
+    <div class="card glass"><h3 style="color:var(--clr-input);">Hybrid SHAP</h3></div>
+    <div class="card glass"><h3 style="color:var(--clr-sampling);">Adaptive Sampling</h3></div>
+    <div class="card glass"><h3 style="color:var(--clr-model);">Model-Aware</h3></div>
+    <div class="card glass"><h3 style="color:var(--clr-shap);">Interaction-Aware</h3></div>
+  </div>
+</div></div>
+
+<!-- Improvement 1: Hybrid SHAP -->
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge input">🔀 Hybrid SHAP</div>
+  <h1 class="slide-title">Improvement 1: Hybrid SHAP</h1>
+  <p class="slide-subtitle">Combine fast InstaSHAP with targeted exact computation for critical features</p>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="card glass">
+      <h3>Current Problem</h3>
+      <p style="color:var(--clr-text-dim); font-size:0.9rem;">InstaSHAP applies uniform random sampling to ALL features — wastes computation on unimportant features</p>
+    </div>
+    <div class="card glass" style="border-color:rgba(16,185,129,0.3);">
+      <h3 style="color:var(--clr-shap);">Proposed Solution</h3>
+      <p style="color:var(--clr-text-dim); font-size:0.9rem;">Phase 1: Quick InstaSHAP scan. Phase 2: Exact SHAP only for top-k most important features</p>
+    </div>
+  </div>
+  <div class="code-block" style="margin-top:var(--space-lg); font-size:0.82rem;">
+# Hybrid SHAP Algorithm
+1. Run InstaSHAP with k_initial = 20  (very fast rough estimate)
+2. Identify top-m features by |φ̂ᵢ|   (most influential)  
+3. For top-m features: run exact SHAP  (accurate where it matters)
+4. For remaining: keep InstaSHAP values (fast, good enough)
+5. Merge results → Hybrid explanation</div>
+</div></div>
+
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge input">🔀 Hybrid Pipeline</div>
+  <h1 class="slide-title">Hybrid SHAP Pipeline Flow</h1>
+  <div class="pipeline" style="margin-top:var(--space-xl);">
+    <div class="pipeline-step input"><span class="step-num">Phase 1</span><span class="step-label">Quick Scan</span></div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step sampling"><span class="step-num">Filter</span><span class="step-label">Rank Features</span></div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step model"><span class="step-num">Phase 2</span><span class="step-label">Exact (Top-m)</span></div>
+    <span class="pipeline-arrow">→</span>
+    <div class="pipeline-step shap"><span class="step-num">Merge</span><span class="step-label">Hybrid Output</span></div>
+  </div>
+  <div class="grid-3" style="margin-top:var(--space-xl);">
+    <div class="card glass" style="text-align:center;"><div class="metric-value green" style="font-size:1.5rem;">~2×</div><div class="metric-label">Slower than pure InstaSHAP</div></div>
+    <div class="card glass" style="text-align:center;"><div class="metric-value blue" style="font-size:1.5rem;">~95%</div><div class="metric-label">Accuracy (up from 85%)</div></div>
+    <div class="card glass" style="text-align:center;"><div class="metric-value purple" style="font-size:1.5rem;">60×</div><div class="metric-label">Still faster than exact</div></div>
+  </div>
+</div></div>
+
+<!-- Improvement 2: Adaptive Sampling -->
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge sampling">🎯 Adaptive Sampling</div>
+  <h1 class="slide-title">Improvement 2: Adaptive Sampling</h1>
+  <p class="slide-subtitle">Sample more in important regions, less in unimportant ones</p>
+  <div class="canvas-container" style="max-height:380px;"><canvas id="adaptive-sampling-viz"></canvas></div>
+</div></div>
+
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge sampling">🎯 Adaptive Algorithm</div>
+  <h1 class="slide-title">Adaptive Sampling Algorithm</h1>
+  <div class="code-block" style="margin-top:var(--space-lg); font-size:0.82rem;">
+# Adaptive Sampling v2
+1. Start with k₀ = 10 uniform random subsets
+2. Compute initial φ̂ᵢ and variance estimates
+3. For features with HIGH variance:
+   → Sample MORE subsets (increase local k)
+4. For features with LOW variance:
+   → Stop sampling (converged)
+5. Repeat until:
+   → Total budget K exhausted, OR
+   → All variances below threshold ε
+   
+# Benefit: Same total K, but much better allocation
+# High-variance features get 5-10× more samples
+# Low-variance features get 2-3× fewer samples</div>
+</div></div>
+
+<!-- Improvement 3: Model-Aware -->
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge model">🧠 Model-Aware</div>
+  <h1 class="slide-title">Improvement 3: Model-Aware Explanation</h1>
+  <p class="slide-subtitle">Use model internals to guide the sampling process</p>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="card glass">
+      <h3>Current: Model-Agnostic</h3>
+      <p style="color:var(--clr-text-dim); font-size:0.9rem;">InstaSHAP treats the model as a black box. It doesn't use ANY information about model structure or gradients.</p>
+      <ul class="bullets" style="margin-top:var(--space-sm);">
+        <li><span class="bullet-icon red">✗</span> Wastes samples on irrelevant feature combinations</li>
+        <li><span class="bullet-icon red">✗</span> Cannot detect which features interact</li>
+      </ul>
+    </div>
+    <div class="card glass" style="border-color:rgba(16,185,129,0.3);">
+      <h3 style="color:var(--clr-shap);">Proposed: Model-Aware</h3>
+      <p style="color:var(--clr-text-dim); font-size:0.9rem;">Use gradient information or internal activations to guide which subsets to sample.</p>
+      <ul class="bullets" style="margin-top:var(--space-sm);">
+        <li><span class="bullet-icon green">✓</span> Gradients indicate feature sensitivity</li>
+        <li><span class="bullet-icon green">✓</span> Hessian reveals interaction pairs</li>
+      </ul>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge model">🧠 Gradient-Guided</div>
+  <h1 class="slide-title">Gradient-Guided Sampling</h1>
+  <div class="code-block" style="margin-top:var(--space-lg); font-size:0.82rem;">
+# Model-Aware InstaSHAP v2
+1. Compute gradient: ∇f(x) = [∂f/∂x₁, ∂f/∂x₂, ..., ∂f/∂xₙ]
+2. Identify high-gradient features (sensitive features)
+3. Compute Hessian diagonal: H = [∂²f/∂x₁², ..., ∂²f/∂xₙ²]
+4. High curvature = non-linear effect → needs more samples
+
+Sampling allocation:
+  kᵢ ∝ |∂f/∂xᵢ| × |∂²f/∂xᵢ²|
+  (more samples for sensitive, non-linear features)</div>
+  <div class="highlight-box" style="margin-top:var(--space-lg); text-align:center;">
+    <strong>Trade-off:</strong> Requires ONE gradient computation (1 backward pass) but guides ALL subsequent sampling → net gain
+  </div>
+</div></div>
+
+<!-- Improvement 4: Interaction-Aware -->
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge shap">🔗 Interaction-Aware</div>
+  <h1 class="slide-title success-title">Improvement 4: Interaction-Aware Estimation</h1>
+  <p class="slide-subtitle">Detect and account for feature interactions in the explanation</p>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="flex-col">
+      <h3>SHAP Interaction Values</h3>
+      <div class="math" style="font-size:0.9rem;">φᵢⱼ = f({i,j}) - f({i}) - f({j}) + f({})</div>
+      <p style="color:var(--clr-text-dim); font-size:0.85rem; margin-top:var(--space-sm);">
+        Measures joint effect beyond sum of individual contributions
+      </p>
+    </div>
+    <div class="flex-col">
+      <h3 style="color:var(--clr-shap);">v2 Approach</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon green">1</span> Screen for interactions using gradient cross-terms</li>
+        <li><span class="bullet-icon green">2</span> For interacting pairs, compute SHAP interaction values</li>
+        <li><span class="bullet-icon green">3</span> Adjust individual SHAP values by interaction correction</li>
+      </ul>
+    </div>
+  </div>
+</div></div>
+
+<!-- Performance Comparison -->
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge shap">📊 v1 vs v2</div>
+  <h1 class="slide-title success-title">InstaSHAP v1 vs v2: Performance</h1>
+  <div class="canvas-container" style="max-height:380px;"><canvas id="side-by-side-viz"></canvas></div>
+</div></div>
+
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge shap">📊 Radar</div>
+  <h1 class="slide-title success-title">Capability Radar: v1 vs v2</h1>
+  <div class="canvas-container" style="max-height:400px;"><canvas id="radar-chart"></canvas></div>
+</div></div>
+
+<!-- More Phase 2 slides -->
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge shap">📋 Implementation Plan</div>
+  <h1 class="slide-title success-title">Practical Implementation Roadmap</h1>
+  <table class="comp-table" style="margin-top:var(--space-lg);">
+    <thead><tr><th>Improvement</th><th>Difficulty</th><th>Impact</th><th>Timeline</th></tr></thead>
+    <tbody>
+      <tr><td>Adaptive Sampling</td><td class="check">Low</td><td class="check">High</td><td>1-2 weeks</td></tr>
+      <tr><td>Stratified Subsets</td><td class="check">Low</td><td class="partial">Medium</td><td>1 week</td></tr>
+      <tr><td>Hybrid SHAP</td><td class="partial">Medium</td><td class="check">High</td><td>2-3 weeks</td></tr>
+      <tr><td>Gradient-Guided</td><td class="partial">Medium</td><td class="check">High</td><td>2-4 weeks</td></tr>
+      <tr><td>Interaction Detection</td><td class="cross">High</td><td class="check">Very High</td><td>1-2 months</td></tr>
+      <tr><td>Model-Specific Shortcuts</td><td class="cross">High</td><td class="partial">Medium</td><td>2-3 months</td></tr>
+    </tbody>
+  </table>
+</div></div>
+
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge accent">🔬 Research Directions</div>
+  <h1 class="slide-title">Future Research Directions</h1>
+  <div class="grid-2" style="margin-top:var(--space-lg);">
+    <div class="card glass">
+      <h3 style="color:var(--clr-input);">Short-term (3-6 months)</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon blue">→</span> Variance-aware confidence intervals</li>
+        <li><span class="bullet-icon blue">→</span> Adaptive k selection per feature</li>
+        <li><span class="bullet-icon blue">→</span> Stratified sampling implementation</li>
+        <li><span class="bullet-icon blue">→</span> Benchmark suite for evaluation</li>
+      </ul>
+    </div>
+    <div class="card glass">
+      <h3 style="color:var(--clr-model);">Long-term (6-12 months)</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon purple">→</span> Neural network-specific shortcuts</li>
+        <li><span class="bullet-icon purple">→</span> LLM-compatible explanation framework</li>
+        <li><span class="bullet-icon purple">→</span> Interaction-aware SHAP values</li>
+        <li><span class="bullet-icon purple">→</span> Theoretical error bounds</li>
+      </ul>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Improvements v2"><div class="slide-content">
+  <div class="section-badge shap">🎯 Expected Impact</div>
+  <h1 class="slide-title success-title">Expected Improvement Impact</h1>
+  <div class="grid-3" style="margin-top:var(--space-xl);">
+    <div class="card glass" style="text-align:center; border-color:rgba(16,185,129,0.3);">
+      <div class="metric-value green" style="font-size:2rem;">+15%</div>
+      <div class="metric-label">Accuracy Gain</div>
+      <p style="color:var(--clr-text-dim); font-size:0.8rem; margin-top:var(--space-sm);">85% → ~95% correlation</p>
+    </div>
+    <div class="card glass" style="text-align:center; border-color:rgba(16,185,129,0.3);">
+      <div class="metric-value green" style="font-size:2rem;">3×</div>
+      <div class="metric-label">Interaction Coverage</div>
+      <p style="color:var(--clr-text-dim); font-size:0.8rem; margin-top:var(--space-sm);">0% → 60% detection</p>
+    </div>
+    <div class="card glass" style="text-align:center; border-color:rgba(245,158,11,0.3);">
+      <div class="metric-value orange" style="font-size:2rem;">~2×</div>
+      <div class="metric-label">Slower</div>
+      <p style="color:var(--clr-text-dim); font-size:0.8rem; margin-top:var(--space-sm);">35ms → ~70ms (still fast)</p>
+    </div>
+  </div>
+</div></div>
+
+<!-- Final summary -->
+<div class="slide" data-section="Improvements v2"><div class="slide-content" style="text-align:center;">
+  <div class="section-badge shap">🏁 Conclusion</div>
+  <h1 class="slide-title success-title" style="font-size:clamp(2rem,4vw,3.5rem);">Key Takeaways</h1>
+  <div class="grid-2" style="margin-top:var(--space-xl); max-width:900px; margin-left:auto; margin-right:auto;">
+    <div class="card glass" style="text-align:left;">
+      <h3 style="color:var(--clr-shap);">✓ What We Learned</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon green">1</span> InstaSHAP trades exactness for speed</li>
+        <li><span class="bullet-icon green">2</span> Works well for ML models with independent features</li>
+        <li><span class="bullet-icon green">3</span> 120× faster than exact SHAP</li>
+        <li><span class="bullet-icon green">4</span> Pipeline: Input → Perturb → Sample → Predict → Compute → Output</li>
+      </ul>
+    </div>
+    <div class="card glass" style="text-align:left;">
+      <h3 style="color:var(--clr-error);">✗ What Needs Work</h3>
+      <ul class="bullets">
+        <li><span class="bullet-icon red">1</span> Fails on feature interactions</li>
+        <li><span class="bullet-icon red">2</span> Unreliable for LLMs and non-linear models</li>
+        <li><span class="bullet-icon red">3</span> Vulnerable to distribution shift</li>
+        <li><span class="bullet-icon red">4</span> v2 improvements can address most of these</li>
+      </ul>
+    </div>
+  </div>
+</div></div>
+
+<div class="slide" data-section="Improvements v2"><div class="slide-content" style="text-align:center;">
+  <div class="title-bg-orb orb-1"></div>
+  <div class="title-bg-orb orb-2"></div>
+  <h1 class="slide-title" style="font-size:clamp(2.5rem,5vw,4.5rem);">Thank You</h1>
+  <p class="slide-subtitle" style="font-size:1.3rem; margin-top:var(--space-lg);">
+    InstaSHAP: Fast Explanations for Real-World AI
+  </p>
+  <div style="margin-top:var(--space-2xl);">
+    <span class="tag blue">XAI</span>
+    <span class="tag purple">Deep Learning</span>
+    <span class="tag orange">Approximation</span>
+    <span class="tag green">SHAP Values</span>
+    <span class="tag cyan">Research</span>
+  </div>
+  <p style="color:var(--clr-text-dim); margin-top:var(--space-2xl); font-size:0.9rem;">
+    Questions & Discussion
+  </p>
+</div></div>
+
+</div><!-- end #presentation -->
+
+<!-- ====== NAVIGATION HUD ====== -->
+<div id="hud">
+  <button id="btn-prev" title="Previous slide (←)">◀</button>
+  <span id="slide-counter">1 / ?</span>
+  <button id="btn-next" title="Next slide (→)">▶</button>
+  <span id="section-label">Motivation</span>
+  <button id="btn-fs" title="Fullscreen (F)">⛶</button>
+</div>
+
+<!-- ====== SCRIPTS ====== -->
+<script src="js/core.js"></script>
+<script src="js/neural-network.js"></script>
+<script src="js/particles.js"></script>
+<script src="js/shap-viz.js"></script>
+<script src="js/pipeline.js"></script>
+<script src="js/failures.js"></script>
+<script src="js/improvements.js"></script>
+<script src="js/charts.js"></script>
+
+<script>
+/* ============================================================
+   Slide Initialization – Canvas Animations
+   ============================================================ */
+
+// Visualization instances
+const vizInstances = {};
+
+// Lazy-init: only create canvas visualizations when their slide is active
+window.addEventListener('slideEnter', (e) => {
+  const idx = e.detail.index;
+  initSlideViz(idx);
+});
+
+function initSlideViz(idx) {
+  const slide = document.querySelectorAll('.slide')[idx];
+  if (!slide) return;
+
+  // Find all canvases in this slide
+  const canvases = slide.querySelectorAll('canvas');
+  canvases.forEach(canvas => {
+    if (vizInstances[canvas.id]) {
+      // Restart if already created
+      if (vizInstances[canvas.id].start) vizInstances[canvas.id].start();
+      return;
+    }
+
+    switch (canvas.id) {
+      /* --- Title --- */
+      case 'title-particles':
+        vizInstances[canvas.id] = new ParticleSystem(canvas, { count: 50, color: '#3B82F6', connectDist: 150 });
+        vizInstances[canvas.id].start();
+        break;
+
+      /* --- Motivation --- */
+      case 'exp-growth-chart':
+        vizInstances[canvas.id] = new ExponentialGrowthViz(canvas, { maxN: 12 });
+        vizInstances[canvas.id].start();
+        break;
+      case 'complexity-chart-1':
+      case 'complexity-chart-2':
+        vizInstances[canvas.id] = new ComplexityChart(canvas);
+        vizInstances[canvas.id].start();
+        break;
+      case 'tradeoff-chart-1':
+      case 'tradeoff-chart-2':
+        vizInstances[canvas.id] = new TradeoffChart(canvas);
+        vizInstances[canvas.id].start();
+        break;
+
+      /* --- Neural Networks --- */
+      case 'nn-full':
+        vizInstances[canvas.id] = new NeuralNetworkViz(canvas, {
+          layers: [3, 5, 4, 1],
+          inputLabels: ['Age', 'Income', 'Score'],
+          outputLabels: ['P(approve)'],
+          animate: true,
+        });
+        break;
+      case 'nn-forward':
+        vizInstances[canvas.id] = new NeuralNetworkViz(canvas, {
+          layers: [3, 5, 4, 1],
+          inputLabels: ['Age', 'Income', 'Score'],
+          outputLabels: ['0.82'],
+          animate: true,
+          showActivations: true,
+        });
+        break;
+      case 'nn-masked-1':
+        vizInstances[canvas.id] = new NeuralNetworkViz(canvas, {
+          layers: [3, 5, 4, 1],
+          inputLabels: ['Age', 'Income', 'Score'],
+          outputLabels: ['?'],
+          maskedFeatures: [1],
+          animate: true,
+        });
+        break;
+      case 'nn-batch':
+      case 'nn-internal':
+        vizInstances[canvas.id] = new NeuralNetworkViz(canvas, {
+          layers: [3, 5, 4, 1],
+          inputLabels: ['Age', 'Inc.', 'Score'],
+          outputLabels: ['f(x)'],
+          animate: true,
+        });
+        break;
+      case 'nn-nonlinear':
+        vizInstances[canvas.id] = new NeuralNetworkViz(canvas, {
+          layers: [4, 8, 6, 4, 1],
+          inputLabels: ['X₁', 'X₂', 'X₃', 'X₄'],
+          outputLabels: ['f(x)'],
+          animate: true,
+        });
+        break;
+
+      /* --- Sampling --- */
+      case 'sampling-viz-1':
+        vizInstances[canvas.id] = new SamplingViz(canvas, { numFeatures: 5, numSubsets: 32, numSampled: 8 });
+        vizInstances[canvas.id].start();
+        break;
+
+      /* --- Pipeline --- */
+      case 'pipeline-viz-step3':
+        vizInstances[canvas.id] = new PipelineViz(canvas, { currentStep: 2 });
+        vizInstances[canvas.id].start();
+        break;
+      case 'pipeline-full':
+      case 'pipeline-interactive':
+        vizInstances[canvas.id] = new PipelineViz(canvas, { currentStep: 5 });
+        vizInstances[canvas.id].start();
+        break;
+
+      /* --- SHAP Visualizations --- */
+      case 'shap-bars-final':
+        vizInstances[canvas.id] = new SHAPBarChart(canvas, {
+          title: 'InstaSHAP Feature Importance',
+          features: [
+            { name: 'Income', value: 0.163 },
+            { name: 'Score', value: 0.107 },
+            { name: 'Age', value: 0.057 },
+          ]
+        });
+        vizInstances[canvas.id].start();
+        break;
+      case 'force-plot-final':
+        vizInstances[canvas.id] = new SHAPForcePlot(canvas, {
+          baseValue: 0.50, outputValue: 0.82,
+          features: [
+            { name: 'Income', value: 0.163 }, { name: 'Score', value: 0.107 },
+            { name: 'Age', value: 0.057 },
+          ]
+        });
+        vizInstances[canvas.id].start();
+        break;
+      case 'shap-heatmap':
+        vizInstances[canvas.id] = new SHAPHeatmap(canvas);
+        vizInstances[canvas.id].start();
+        break;
+      case 'comparison-step5':
+        vizInstances[canvas.id] = new ComparisonBarChart(canvas, {
+          title: 'Exact SHAP vs InstaSHAP (3 Features)',
+          features: [
+            { name: 'Income', expected: 0.170, actual: 0.163 },
+            { name: 'Score', expected: 0.112, actual: 0.107 },
+            { name: 'Age', expected: 0.060, actual: 0.057 },
+          ]
+        });
+        vizInstances[canvas.id].start();
+        break;
+
+      /* --- Speed --- */
+      case 'speed-chart-1':
+        vizInstances[canvas.id] = new SpeedChart(canvas);
+        vizInstances[canvas.id].start();
+        break;
+      case 'accuracy-vs-k':
+        vizInstances[canvas.id] = new TradeoffChart(canvas, {
+          methods: [
+            { label: 'k=10', speed: 0.95, accuracy: 0.72, color: '#EF4444', r: 7 },
+            { label: 'k=50', speed: 0.78, accuracy: 0.85, color: '#F59E0B', r: 8 },
+            { label: 'k=100', speed: 0.6, accuracy: 0.92, color: '#3B82F6', r: 8 },
+            { label: 'k=500', speed: 0.2, accuracy: 0.98, color: '#10B981', r: 8 },
+          ]
+        });
+        vizInstances[canvas.id].start();
+        break;
+
+      /* --- Failures --- */
+      case 'interaction-viz-1':
+        vizInstances[canvas.id] = new InteractionViz(canvas);
+        vizInstances[canvas.id].start();
+        break;
+      case 'comparison-interaction':
+        vizInstances[canvas.id] = new ComparisonBarChart(canvas, {
+          title: 'Interaction Case: Expected vs InstaSHAP',
+          features: [
+            { name: 'X₁', expected: 0.35, actual: 0.02 },
+            { name: 'X₂', expected: 0.35, actual: 0.03 },
+            { name: 'X₁·X₂', expected: 0.30, actual: 0.00 },
+          ]
+        });
+        vizInstances[canvas.id].start();
+        break;
+      case 'comparison-nonlinear':
+        vizInstances[canvas.id] = new ComparisonBarChart(canvas, {
+          title: 'Non-linear Model: Expected vs InstaSHAP',
+          features: [
+            { name: 'Feature 1', expected: 0.45, actual: 0.28 },
+            { name: 'Feature 2', expected: -0.22, actual: -0.35 },
+            { name: 'Feature 3', expected: 0.18, actual: 0.12 },
+            { name: 'Feature 4', expected: 0.08, actual: 0.15 },
+          ]
+        });
+        vizInstances[canvas.id].start();
+        break;
+      case 'dist-shift-viz':
+        vizInstances[canvas.id] = new DistributionShiftViz(canvas);
+        vizInstances[canvas.id].start();
+        break;
+
+      /* --- Improvements --- */
+      case 'adaptive-sampling-viz':
+        vizInstances[canvas.id] = new AdaptiveSamplingViz(canvas);
+        vizInstances[canvas.id].start();
+        break;
+      case 'side-by-side-viz':
+        vizInstances[canvas.id] = new SideBySideViz(canvas);
+        vizInstances[canvas.id].start();
+        break;
+      case 'radar-chart':
+        vizInstances[canvas.id] = new RadarChart(canvas);
+        vizInstances[canvas.id].start();
+        break;
+    }
+  });
+}
+
+/* ============================================================
+   Interactive Simulation Logic
+   ============================================================ */
+
+function updateSimulation() {
+  const age = document.getElementById('sim-age')?.value || 35;
+  const income = document.getElementById('sim-income')?.value || 75;
+  const score = (document.getElementById('sim-score')?.value || 80) / 100;
+
+  document.getElementById('sim-age-val').textContent = age;
+  document.getElementById('sim-income-val').textContent = income;
+  document.getElementById('sim-score-val').textContent = score.toFixed(2);
+
+  // Simple model simulation
+  const norm_age = (age - 18) / 52;
+  const norm_income = (income - 20) / 180;
+  const prediction = Math.min(0.99, Math.max(0.01, 0.3 + norm_income * 0.35 + score * 0.2 + norm_age * 0.08));
+
+  document.getElementById('sim-prediction').textContent = `f(x) = ${prediction.toFixed(3)}`;
+
+  // Approximate SHAP values
+  const phi_income = norm_income * 0.35;
+  const phi_score = score * 0.2;
+  const phi_age = norm_age * 0.08;
+  const max_phi = Math.max(Math.abs(phi_income), Math.abs(phi_score), Math.abs(phi_age));
+
+  const barIncome = document.getElementById('sim-bar-income');
+  const barScore = document.getElementById('sim-bar-score');
+  const barAge = document.getElementById('sim-bar-age');
+
+  if (barIncome) { barIncome.style.width = `${(Math.abs(phi_income) / max_phi) * 90}%`; barIncome.textContent = `+${phi_income.toFixed(3)}`; }
+  if (barScore) { barScore.style.width = `${(Math.abs(phi_score) / max_phi) * 90}%`; barScore.textContent = `+${phi_score.toFixed(3)}`; }
+  if (barAge) { barAge.style.width = `${(Math.abs(phi_age) / max_phi) * 90}%`; barAge.textContent = `+${phi_age.toFixed(3)}`; }
+
+  // Update explanation
+  const exp = document.getElementById('sim-explanation');
+  if (exp) {
+    if (norm_income > 0.6) exp.textContent = '💡 High income is the dominant factor in approval prediction.';
+    else if (score > 0.7) exp.textContent = '💡 Credit score is the main driver with moderate income.';
+    else exp.textContent = '💡 No single feature dominates — all contribute moderately.';
+  }
+}
+
+function updateKSimulation() {
+  const k = parseInt(document.getElementById('sim-k')?.value || 50);
+  document.getElementById('sim-k-val').textContent = k;
+
+  const accuracy = Math.min(99, 50 + 50 * (1 - Math.exp(-k / 100)));
+  const speed = Math.max(5, k * 0.7);
+  const variance = Math.max(2, 100 - accuracy);
+
+  const speedBar = document.getElementById('sim-speed-bar');
+  const accBar = document.getElementById('sim-acc-bar');
+  const varBar = document.getElementById('sim-var-bar');
+
+  if (speedBar) { speedBar.style.width = `${Math.max(5, 100 - speed / 3.5)}%`; speedBar.textContent = `${speed.toFixed(0)}ms`; }
+  if (accBar) { accBar.style.width = `${accuracy}%`; accBar.textContent = `${accuracy.toFixed(0)}%`; }
+  if (varBar) { varBar.style.width = `${variance}%`; varBar.textContent = variance > 30 ? 'High' : variance > 15 ? 'Moderate' : 'Low'; }
+
+  const exp = document.getElementById('sim-k-explanation');
+  if (exp) {
+    if (k < 20) exp.textContent = `With k=${k}, explanations are very noisy and unreliable. Not recommended for production use.`;
+    else if (k < 100) exp.textContent = `With k=${k}, InstaSHAP achieves ~${accuracy.toFixed(0)}% correlation with exact SHAP in ~${speed.toFixed(0)}ms. Good balance of speed and accuracy.`;
+    else exp.textContent = `With k=${k}, accuracy is high (~${accuracy.toFixed(0)}%) but speed decreases to ~${speed.toFixed(0)}ms. Consider if this trade-off is worth it.`;
+  }
+}
+
+// Initialize first slide
+setTimeout(() => initSlideViz(0), 100);
+</script>
+
+</body>
+</html>

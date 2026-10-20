@@ -21,7 +21,7 @@ from tqdm import tqdm
 from data.preprocessing import TabularPreprocessor
 from masking.config import MaskingConfig
 from masking.zero_mask import apply_zero_mask, expand_feature_mask_torch
-from masking.background_mask import apply_background_mask, compute_background_targets
+from masking.background_mask import apply_background_mask
 from masking.curriculum import curriculum_shapley_masks, standard_shapley_masks
 from models.blackbox_model import MaskedSurrogateMLP, SurrogateEnsemble, TabularMLP
 from models.gam import GAMModel
@@ -231,12 +231,11 @@ def train_masked_surrogate(
                     x_repeated, feature_mask, preprocessor, background_bank, rng,
                     K=masking_config.background_samples_train,
                 )
-                # Re-compute targets using background-averaged blackbox
-                targets = compute_background_targets(
-                    blackbox_model, x_repeated, feature_mask,
-                    preprocessor, background_bank, rng, device,
-                    K=masking_config.background_samples_train,
-                )
+                # Match every sampled completion to its own black-box output.
+                with torch.no_grad():
+                    targets = blackbox_model(masked_inputs)
+                # apply_background_mask concatenates complete batches in K order.
+                feature_mask = feature_mask.repeat(masking_config.background_samples_train, 1)
             else:
                 # Baseline: zero-masking
                 masked_inputs = apply_zero_mask(x_repeated, feature_mask, preprocessor)
@@ -264,8 +263,7 @@ def train_masked_surrogate(
 
                 if use_bg and background_bank is not None:
                     vmasked = apply_background_mask(x_vb, vmask, preprocessor, background_bank, rng, K=1)
-                    vtargets = compute_background_targets(
-                        blackbox_model, x_vb, vmask, preprocessor, background_bank, rng, device, K=1)
+                    vtargets = blackbox_model(vmasked)
                 else:
                     vmasked = apply_zero_mask(x_vb, vmask, preprocessor)
                     vtargets = bb_vb

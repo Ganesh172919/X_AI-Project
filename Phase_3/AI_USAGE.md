@@ -1,5 +1,15 @@
 # AI Usage Declaration — Phase 3
 
+## October 2026 review repair
+
+Codex assisted with resolving the stale branch against current main and fixing
+reviewed training, probability, SHAP-budget and CLI logging defects. Validation
+uses small deterministic CPU tests and real permutation SHAP, without downloading
+research datasets. The saved Covertype experiment results were not rerun and must
+not be interpreted as validation of the corrected training loop.
+The earlier verification checklist below is historical; this repair verifies
+only the named regression cases.
+
 ## Tool Used
 - **AI Assistant:** Google Gemini (Antigravity agent)
 - **Purpose:** Code generation, research synthesis, and experiment design assistance

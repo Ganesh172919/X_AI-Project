@@ -11,6 +11,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import logging
 import sys
 from pathlib import Path
 
@@ -35,7 +36,7 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    log = get_logger("main", log_file="results/run.log")
+    log = get_logger("main", log_file="results/run.log", level=getattr(logging, args.log_level))
     log.info(f"Phase 3 InstaSHAP — variant={args.variant}, fast_dev_run={args.fast_dev_run}")
 
     config_path = Path(args.config)

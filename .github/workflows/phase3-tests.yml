@@ -1,0 +1,24 @@
+name: Phase 3 regression tests
+
+on:
+  push:
+    paths: ["Phase_3/**", ".github/workflows/phase3-tests.yml"]
+  pull_request:
+    paths: ["Phase_3/**", ".github/workflows/phase3-tests.yml"]
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install CPU Torch
+        run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - name: Install regression dependencies
+        run: pip install numpy pandas scikit-learn scipy shap PyYAML tqdm ucimlrepo pytest
+      - name: Run offline review regressions
+        env:
+          OMP_NUM_THREADS: "1"
+        run: python -m pytest Phase_3/tests -q

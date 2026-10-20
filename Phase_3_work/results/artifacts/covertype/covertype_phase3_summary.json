@@ -1,0 +1,42 @@
+{
+  "dataset": "covertype",
+  "plots": [
+    "results\\plots\\covertype\\covertype_accuracy_comparison.png",
+    "results\\plots\\covertype\\covertype_explanation_mae_comparison.png",
+    "results\\plots\\covertype\\covertype_explanation_runtime_comparison.png",
+    "results\\plots\\covertype\\covertype_instashap_bg_alignment.png",
+    "results\\plots\\covertype\\covertype_instashap_zero_alignment.png",
+    "results\\plots\\covertype\\covertype_interaction_elevation_soil_climate_zone.png",
+    "results\\plots\\covertype\\covertype_seed_123_shap_importance.png",
+    "results\\plots\\covertype\\covertype_seed_123_training_curves.png",
+    "results\\plots\\covertype\\covertype_seed_2026_shap_importance.png",
+    "results\\plots\\covertype\\covertype_seed_2026_training_curves.png",
+    "results\\plots\\covertype\\covertype_seed_42_shap_importance.png",
+    "results\\plots\\covertype\\covertype_seed_42_training_curves.png",
+    "results\\plots\\covertype\\covertype_shape_aspect.png",
+    "results\\plots\\covertype\\covertype_shape_elevation.png",
+    "results\\plots\\covertype\\covertype_shape_soil_climate_zone.png"
+  ],
+  "reports": {
+    "experiment_markdown": "reports\\phase3_experiment_report.md",
+    "experiment_pdf": "reports\\phase3_experiment_report.pdf",
+    "gap_markdown": "reports\\phase3_research_gap_1page.md",
+    "gap_pdf": "reports\\phase3_research_gap_1page.pdf"
+  },
+  "seeds": [
+    42,
+    123,
+    2026
+  ],
+  "tables": {
+    "coalition_fidelity": "results\\tables\\covertype_coalition_fidelity.csv",
+    "coalition_summary": "results\\tables\\covertype_coalition_summary.csv",
+    "explanation_fidelity": "results\\tables\\covertype_explanation_fidelity.csv",
+    "explanation_summary": "results\\tables\\covertype_explanation_summary.csv",
+    "predictive_metrics": "results\\tables\\covertype_predictive_metrics.csv",
+    "predictive_summary": "results\\tables\\covertype_predictive_summary.csv",
+    "runtime_metrics": "results\\tables\\covertype_runtime_metrics.csv",
+    "runtime_summary": "results\\tables\\covertype_runtime_summary.csv"
+  },
+  "variant": "compare"
+}

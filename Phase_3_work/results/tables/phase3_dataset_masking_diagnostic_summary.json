@@ -1,0 +1,40 @@
+{
+  "summary": [
+    {
+      "dataset": "adult_income",
+      "rows_used": 12000,
+      "eval_rows": 256,
+      "original_features": 13,
+      "transformed_features": 94,
+      "categorical_features": 8,
+      "one_hot_expansion": 81,
+      "hidden_feature_fraction": 0.5102,
+      "zero_hidden_categorical_groups": 1049,
+      "zero_hidden_categorical_valid_rate": 0.0,
+      "zero_hidden_categorical_invalid_rate": 1.0,
+      "bg_hidden_categorical_groups": 4196,
+      "bg_hidden_categorical_valid_rate": 1.0,
+      "bg_hidden_categorical_invalid_rate": 0.0,
+      "zero_hidden_numeric_entries": 649,
+      "zero_hidden_numeric_exact_zero_rate": 1.0,
+      "bg_hidden_numeric_entries": 2596,
+      "bg_hidden_numeric_exact_zero_rate": 0.0,
+      "zero_nearest_train_distance_mean": 2.1893,
+      "bg_nearest_train_distance_mean": 1.3329,
+      "validity_gain": 1.0,
+      "zero_rate_reduction": 1.0,
+      "normalized_distance_gain": 0.39117526149910925,
+      "categorical_ratio": 0.6153846153846154,
+      "showcase_score": 0.797058420499703
+    }
+  ],
+  "recommendation": [
+    {
+      "dataset": "adult_income",
+      "showcase_score": "0.7971",
+      "categorical_features": 8,
+      "one_hot_expansion": 81,
+      "reason": "best current masking showcase dataset"
+    }
+  ]
+}

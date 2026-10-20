@@ -46,8 +46,12 @@ def predict_probabilities(
     device: torch.device,
     batch_size: int = 1024,
 ) -> np.ndarray:
-    """Predict class probabilities via softmax."""
+    """Predict probabilities from binary or multiclass logits."""
     raw = predict_raw_outputs(model, X, device, batch_size)
     raw_t = torch.from_numpy(raw)
-    probs = torch.softmax(raw_t, dim=1).numpy()
+    if raw_t.shape[1] == 1:
+        positive = torch.sigmoid(raw_t)
+        probs = torch.cat([1.0 - positive, positive], dim=1).numpy()
+    else:
+        probs = torch.softmax(raw_t, dim=1).numpy()
     return probs

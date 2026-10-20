@@ -2,6 +2,11 @@
 
 ## Experiment Report — Covertype Dataset
 
+These saved experiment results predate the October 2026 review fixes for
+background input/target alignment. They have not been regenerated or validated
+against the corrected training loop; rerun the experiments before using these
+numbers to assess the corrected implementation.
+
 **Seeds:** [42]
 **Variant:** compare
 

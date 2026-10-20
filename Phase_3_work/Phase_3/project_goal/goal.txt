@@ -1,0 +1,38 @@
+Phase 3: Research Gap Identification and Extension
+Deadline: 3rd April
+Marks: 10 Marks
+Task
+Identify a limitation in the original paper and propose a solution.
+Expected Work
+• Clearly define research gap
+• Propose and implement one improvement (supported by good reference from
+literature)
+
+• Show experimental comparison (before vs after improvement)
+Deliverables
+• Code updates
+• Experimental results
+• 1 page research gap explanation
+
+Evaluation Breakdown
+Component Marks
+Replication quality 20
+Research gap & extension 10
+Total 30 Marks
+
+Academic Integrity and AI Usage Policy
+AI Tools (ChatGPT, Copilot etc.)
+Allowed only if: - Usage is declared - Prompts are documented - Output is verified and
+understood
+Each team must submit an AI_USAGE.md file containing: - Tool used - Prompts used - How
+output was modified
+
+Plagiarism Policy
+• Final research paper similarity must be less than 20%
+• All sources must be cited
+• Copying code without citation is not allowed
+Violation will result in zero marks.
+
+Reproducibility Requirement
+Each project must include: - GitHub repository - Requirements file - Dataset link - Instructions to
+run code - Random seed mentioned

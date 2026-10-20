@@ -1,0 +1,60 @@
+global:
+  device: auto
+  output_root: results
+  shap_background_size: 64
+  shap_max_evals: 256
+  seeds: [42, 123, 2026]
+  fast_dev_run: false
+
+dataset:
+  name: covertype
+  max_rows: 60000
+  test_size: 0.20
+  val_size: 0.10
+  interaction_pairs:
+    - [elevation, soil_climate_zone]
+  shap_sample_size: 24
+  coalition_eval_size: 48
+
+masking:
+  background_bank_size: 512
+  background_samples_train: 2
+  background_samples_eval: 4
+  seed: 42
+
+training:
+  blackbox:
+    model_type: mlp
+    hidden_dims: [384, 192]
+    dropout: 0.10
+    lr: 0.001
+    weight_decay: 0.0001
+    batch_size: 512
+    epochs: 30
+    patience: 6
+  gam:
+    hidden_dims: [128, 64]
+    dropout: 0.05
+    lr: 0.001
+    weight_decay: 0.00001
+    batch_size: 512
+    epochs: 40
+    patience: 7
+  surrogate:
+    hidden_dims: [256, 128]
+    dropout: 0.10
+    lr: 0.001
+    weight_decay: 0.00001
+    batch_size: 512
+    epochs: 24
+    patience: 6
+    edge_mask_probability: 0.10
+  instashap:
+    hidden_dims: [128, 64]
+    dropout: 0.05
+    lr: 0.001
+    weight_decay: 0.00001
+    batch_size: 512
+    epochs: 40
+    patience: 7
+    edge_mask_probability: 0.10

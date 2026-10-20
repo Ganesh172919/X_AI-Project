@@ -67,7 +67,7 @@ def coalition_fidelity_mse(surrogate_pred: np.ndarray, true_pred: np.ndarray) ->
 # ── Innovation 2: Convergence Speed ────────────────────────────────────
 
 def convergence_epoch(val_losses: list[float], threshold_ratio: float = 0.95) -> int:
-    """Epoch at which val loss first reaches threshold_ratio * final best loss."""
+    """First epoch within 1 / threshold_ratio of the final best validation loss."""
     if not val_losses:
         return 0
     best = min(val_losses)
